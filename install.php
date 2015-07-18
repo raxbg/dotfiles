@@ -91,8 +91,29 @@ function create_link($path, $name) {
     }
 }
 
+//Setup symlinks
 $entries = glob(".*");
 foreach ($entries as $entry) {
     if (in_array($entry, array(".", "..", ".git"))) continue;
     create_link($entry, ucfirst(strtolower(substr($entry, 1))));
+}
+
+//Install Vundle
+echo __g("Cloning Vundle...\n");
+passthru("git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim", $ret_val);
+if ($ret_val == 0) {
+    echo __g("Vundle installed succcessfully\n");
+} else {
+    echo __r("Failed to install Vundle! Aborting script...\n");
+    exit;
+}
+
+//Install Vim plugins
+echo __g("Installing Vim plugins");
+passthru('vim -c "PluginInstall" -c ":qa"', $ret_val);
+if ($ret_val == 0) {
+    echo __g("Vim plugins installed succcessfully\n");
+} else {
+    echo __r("Failed to install Vim plugins! Aborting script...\n");
+    exit;
 }
