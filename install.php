@@ -70,12 +70,15 @@ function __r($str) { global $c; return $c->getColoredString($str, 'red'); }
 define("DS", DIRECTORY_SEPARATOR);
 define("HOME", rtrim(getenv("HOME"), DS));
 chdir(dirname(__FILE__));
+$cwd = rtrim(getcwd(), DS);
 
 function create_link($path, $name) {
+    global $cwd;
     echo __g("Linking $name...");
     try {
         if (file_exists($path)) {
             if (!file_exists(HOME.DS.$path)) {
+		symlink($cwd.DS.$path, HOME.DS.$path);
                 echo __g("DONE\n");
             } else {
                 throw new RuntimeException ("$name files already exist");
