@@ -1,0 +1,12 @@
+[default]
+# Write your default config options here!
+
+subcp=cp1251
+#ao=pulse
+vo=xv,directfb
+#vo=vdpau
+lavdopts=threads=4
+use-filename-title=yes
+af=scaletempo
+idx=yes
+#heartbeat-cmd="xscreensaver-command -deactivate >&- 2>&- &"
