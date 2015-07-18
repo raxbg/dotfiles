@@ -1,5 +1,5 @@
 <?php
-class Colors { //src: http://www.if-not-true-then-false.com/2010/php-class-for-coloring-php-command-line-cli-scripts-output-php-output-colorizing-using-bash-shell-colors/
+class Colors { //Colors src: http://www.if-not-true-then-false.com/2010/php-class-for-coloring-php-command-line-cli-scripts-output-php-output-colorizing-using-bash-shell-colors/
     private $foreground_colors = array();
     private $background_colors = array();
 
@@ -62,6 +62,11 @@ class Colors { //src: http://www.if-not-true-then-false.com/2010/php-class-for-c
     }
 }
 
+$useForce = false;
+if (isset($argv[1]) && $argv[1] == '-f') {
+    $useForce = true;
+}
+
 $c = new Colors;
 
 function __g($str) { global $c; return $c->getColoredString($str, 'green'); }
@@ -73,12 +78,19 @@ chdir(dirname(__FILE__));
 $cwd = rtrim(getcwd(), DS);
 
 function create_link($path, $name) {
-    global $cwd;
+    global $cwd, $useForce;
     echo __g("Linking $name...");
     try {
         if (file_exists($path)) {
-            if (!file_exists(HOME.DS.$path)) {
-		symlink($cwd.DS.$path, HOME.DS.$path);
+            if (!file_exists(HOME.DS.$path) || $useForce) {
+                if (file_exists(HOME.DS.$path)) {
+                    $new_name = HOME.DS.$path.".bak_dotfiles_installer";
+                    while (file_exists($new_name)) {
+                        $new_name .= ".copy";
+                    }
+                    rename(HOME.DS.$path, $new_name);
+                }
+                symlink($cwd.DS.$path, HOME.DS.$path);
                 echo __g("DONE\n");
             } else {
                 throw new RuntimeException ("$name files already exist");
@@ -109,7 +121,7 @@ if ($ret_val == 0) {
 }
 
 //Install Vim plugins
-echo __g("Installing Vim plugins");
+echo __g("Installing Vim plugins\n");
 passthru('vim -c "PluginInstall" -c ":qa"', $ret_val);
 if ($ret_val == 0) {
     echo __g("Vim plugins installed succcessfully\n");
