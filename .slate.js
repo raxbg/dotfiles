@@ -139,6 +139,7 @@ var relaunch = slate.operation("relaunch");
 slate.bind("r:alt", relaunch);
 
 var tileAll = function() {
+  //TODO: when new window is spawned, move it to the screen less windows (or calculate the area of the new window if it were to be placed on each screen and place it where it will have the largest area)
   var scr = slate.screen();
 
   var rect = scr.visibleRect();
