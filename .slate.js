@@ -182,10 +182,10 @@ var tileAll = function() {
               break;
           }
 
-          var x = (pos == 'left') ? topLeftX : topLeftX+scrWidth/2;
-          var y = topLeftY + (scrHeight / sideWinCounts * winCounts);
-          var width = scrWidth/2;
+          var width = win.isResizable() ? scrWidth/2 : win.size().width;
           var height = scrHeight / sideWinCounts;
+          var x = (pos == 'left') ? topLeftX : ( scrWidth-width );
+          var y = topLeftY + (scrHeight / sideWinCounts * winCounts);
 
           win.doOperation("move", {
             "x" : x,
@@ -207,7 +207,9 @@ slate.on('windowOpened', function(e, win) {
   if (win.title().match(/^chrome-devtools/)) {
     win.doOperation(throwFullScreen(1, win));
   }
-  tileAll();
+  if (win.isResizable()) {
+    tileAll();
+  }
 });
 
 var grid = slate.operation("grid", {
