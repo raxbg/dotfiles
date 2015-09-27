@@ -138,68 +138,104 @@ slate.bind("f:alt", hint);
 var relaunch = slate.operation("relaunch");
 slate.bind("r:alt", relaunch);
 
-var tileAll = function() {
-  var scr = slate.screen();
+var shouldTileWindow = function (win, scrId, excludes) {
+  excludes = excludes||[];
+  return (win.screen().id() == scrId && !win.isMinimizedOrHidden() && win.isResizable() && win.isMovable() && win.title() && excludes.indexOf(win.app().name()) == -1);
+};
 
-  var rect = scr.visibleRect();
-  var topLeftX = rect.x;
-  var topLeftY = rect.y;
-  var scrWidth = rect.width;
-  var scrHeight = rect.height;
-
+var countWindowsOnScreen = function(scrId) {
   var totalWindows = 0;
   slate.eachApp(function(app) {
     app.eachWindow(function(win) {
-      if (win.screen().id() == scr.id() && !win.isMinimizedOrHidden() && win.title()) {
+      if (shouldTileWindow(win, scrId)) {
         totalWindows++;
       }
     });
   });
-  slate.log('total:: ' + totalWindows);
+  return totalWindows;
+};
 
-  if (totalWindows == 1) {
-  } else if (totalWindows > 1) {
-    var winCountLeft = parseInt(totalWindows / 2);
-    var winCountRight = (totalWindows % 2 === 0) ? winCountLeft : winCountLeft+1;
-    var posWindowsCounts = [0,0];
-    var pos = 'left';
+var tileAll = function() {
+    var scr, rect, topLeftX, topLeftY, scrWidth, scrHeight;
+  try {
+    scr = slate.screen();
+    rect = scr.visibleRect();
+    topLeftX = rect.x;
+    topLeftY = rect.y;
+    scrWidth = rect.width;
+    scrHeight = rect.height;
+  } catch (e) {
+    return;
+  }
 
-    slate.eachApp(function(app) {
-      app.eachWindow(function(win) {
-        if (win.screen().id() == scr.id()) {
-          var winCounts, sideWinCounts;
-          switch (pos) {
-            case 'left':
-              winCounts = posWindowsCounts[0];
-              posWindowsCounts[0]++;
-              sideWinCounts = winCountLeft;
-              break;
-            case 'right':
-              winCounts = posWindowsCounts[1];
-              posWindowsCounts[1]++;
-              sideWinCounts = winCountRight;
-              break;
-          }
+  var totalWindows = countWindowsOnScreen(scr.id());
+  var winCountLeft = parseInt(totalWindows / 2);
+  var winCountRight = (totalWindows % 2 === 0) ? winCountLeft : winCountLeft+1;
+  var posWindowsCounts = [0,0];
+  var pos = 'left';
 
-          var x = (pos == 'left') ? topLeftX : topLeftX+scrWidth/2;
-          var y = topLeftY + (scrHeight / sideWinCounts * winCounts);
-          var width = scrWidth/2;
-          var height = scrHeight / sideWinCounts;
+  slate.eachApp(function(app) {
+    app.eachWindow(function(win) {
+      if (totalWindows == 1) {
+        win.doOperation(halfScreenCenter);
+      } else if (totalWindows > 1) {
+        if (!shouldTileWindow(win, scr.id())) return;
 
-          win.doOperation("move", {
-            "x" : x,
-            "y" : y,
-            "width" : width,
-            "height" : height,
-            "screen" : scr.id()
-          });
-
-          pos = (pos == 'left') ? 'right' : 'left';
-          if (pos == 'left' && posWindowsCounts[0] == winCountLeft) pos = 'right';
+        var winCounts, sideWinCounts;
+        switch (pos) {
+          case 'left':
+            winCounts = posWindowsCounts[0];
+            posWindowsCounts[0]++;
+            sideWinCounts = winCountLeft;
+            break;
+          case 'right':
+            winCounts = posWindowsCounts[1];
+            posWindowsCounts[1]++;
+            sideWinCounts = winCountRight;
+            break;
         }
+
+        var x = (pos == 'left') ? topLeftX : topLeftX+scrWidth/2;
+        var y = topLeftY + (scrHeight / sideWinCounts * winCounts);
+        var width = scrWidth/2;
+        var height = scrHeight / sideWinCounts;
+
+        win.doOperation("move", {
+          "x" : x,
+          "y" : y,
+          "width" : width,
+          "height" : height,
+          "screen" : scr.id()
+        });
+
+        pos = (pos == 'left') ? 'right' : 'left';
+        if (pos == 'left' && posWindowsCounts[0] == winCountLeft) pos = 'right';
+      }
+    });
+  });
+};
+
+var hideAll = function() {
+  var scrId = slate.screen().id();
+  slate.eachApp(function(app) {
+    app.eachWindow(function(win) {
+      if (win.screen().id() == scrId) win.doOperation('hide', {
+        "app" : [app.name()]
       });
     });
-  }
+  });
+};
+
+var bringUp = function(appName) {
+  slate.operation('show', {
+    "app" : [appName]
+  }).run();
+
+  slate.operation('focus', {
+    "app" : appName
+  }).run();
+
+  tileAll();
 };
 
 slate.on('windowOpened', function(e, win) {
@@ -209,11 +245,23 @@ slate.on('windowOpened', function(e, win) {
   tileAll();
 });
 
+slate.on('windowClosed', function(e, app) {
+  tileAll();
+});
+
+slate.on('appClosed', function(e, app) {
+  tileAll();
+});
+
 var grid = slate.operation("grid", {
 	"grids" : {
 		"1920x1080" : {
 			"width" : 16,
 			"height" : 9
+		},
+		"1440x900" : {
+			"width" : 16,
+			"height" : 10
 		}
 	}
 });
@@ -258,3 +306,56 @@ slate.bind("right:alt,cmd", function(win) {
 
 //Fullscreen toggle
 slate.bind("f:alt,cmd", fullScreenToggle);
+
+//Focus single app
+slate.bind("h:j,cmd", function(win) {
+  hideAll();
+  bringUp("HipChat");
+});
+slate.bind("i:j,cmd", function(win) {
+  hideAll();
+  bringUp("iTerm");
+});
+slate.bind("g:j,cmd", function(win) {
+  hideAll();
+  bringUp("Google Chrome");
+});
+slate.bind("m:j,cmd", function(win) {
+  hideAll();
+  bringUp("Mail");
+});
+slate.bind("f:j,cmd", function(win) {
+  hideAll();
+  bringUp("Finder");
+});
+slate.bind("s:j,cmd", function(win) {
+  hideAll();
+  bringUp("Spotify");
+});
+slate.bind("t:j,cmd", function(win) {
+  hideAll();
+  bringUp("TextEdit");
+});
+
+//Focus on multiple apps
+slate.bind("h:j,alt:toggle", function(win) {
+  bringUp("HipChat");
+});
+slate.bind("i:j,alt:toggle", function(win) {
+  bringUp("iTerm");
+});
+slate.bind("g:j,alt:toggle", function(win) {
+  bringUp("Google Chrome");
+});
+slate.bind("m:j,alt:toggle", function(win) {
+  bringUp("Mail");
+});
+slate.bind("f:j,alt:toggle", function(win) {
+  bringUp("Finder");
+});
+slate.bind("s:j,alt:toggle", function(win) {
+  bringUp("Spotify");
+});
+slate.bind("t:j,alt:toggle", function(win) {
+  bringUp("TextEdit");
+});
