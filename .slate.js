@@ -219,9 +219,12 @@ var hideAll = function() {
   var scrId = slate.screen().id();
   slate.eachApp(function(app) {
     app.eachWindow(function(win) {
-      if (win.screen().id() == scrId) win.doOperation('hide', {
-        "app" : [app.name()]
-      });
+      if (win.screen().id() == scrId) {
+        slate.log("Hiding " + app.name() + " from screen " + win.screen().id() + " while aiming at screen " + scrId);
+        slate.operation('hide', {
+          "app" : [app.name()]
+        }).run();
+      }
     });
   });
 };
@@ -339,6 +342,10 @@ slate.bind("t:j,cmd", function(win) {
   hideAll();
   bringUp("TextEdit");
 });
+slate.bind("l:j,cmd", function(win) {
+  hideAll();
+  bringUp("LimeChat");
+});
 
 //Focus on multiple apps
 slate.bind("h:j,alt:toggle", function(win) {
@@ -361,4 +368,7 @@ slate.bind("s:j,alt:toggle", function(win) {
 });
 slate.bind("t:j,alt:toggle", function(win) {
   bringUp("TextEdit");
+});
+slate.bind("l:j,alt:toggle", function(win) {
+  bringUp("LimeChat");
 });
