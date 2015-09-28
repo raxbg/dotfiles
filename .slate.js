@@ -216,20 +216,22 @@ var tileAll = function() {
 };
 
 var hideAll = function() {
-  var scrId = slate.screen().id();
-  slate.eachApp(function(app) {
-    app.eachWindow(function(win) {
-      if (win.screen().id() == scrId) {
-        slate.log("Hiding " + app.name() + " from screen " + win.screen().id() + " while aiming at screen " + scrId);
-        slate.operation('hide', {
-          "app" : [app.name()]
-        }).run();
-      }
-    });
-  });
+  return;
+  //var scrId = slate.screen().id();
+  //slate.eachApp(function(app) {
+  //  app.eachWindow(function(win) {
+  //    if (win.screen().id() == scrId) {
+  //      slate.log("Hiding " + app.name() + " from screen " + win.screen().id() + " while aiming at screen " + scrId);
+  //      slate.operation('hide', {
+  //        "app" : [app.name()]
+  //      }).run();
+  //    }
+  //  });
+  //});
 };
 
-var bringUp = function(appName) {
+var bringUp = function(appName, autoTile) {
+  autoTile = autoTile||false;
   slate.operation('show', {
     "app" : [appName]
   }).run();
@@ -238,7 +240,11 @@ var bringUp = function(appName) {
     "app" : appName
   }).run();
 
-  tileAll();
+  if (autoTile) {
+    tileAll();
+  } else {
+    slate.window().doOperation(halfScreenCenter);
+  }
 };
 
 slate.on('windowOpened', function(e, win) {
@@ -349,26 +355,26 @@ slate.bind("l:j,cmd", function(win) {
 
 //Focus on multiple apps
 slate.bind("h:j,alt:toggle", function(win) {
-  bringUp("HipChat");
+  bringUp("HipChat", true);
 });
 slate.bind("i:j,alt:toggle", function(win) {
-  bringUp("iTerm");
+  bringUp("iTerm", true);
 });
 slate.bind("g:j,alt:toggle", function(win) {
-  bringUp("Google Chrome");
+  bringUp("Google Chrome", true);
 });
 slate.bind("m:j,alt:toggle", function(win) {
-  bringUp("Mail");
+  bringUp("Mail", true);
 });
 slate.bind("f:j,alt:toggle", function(win) {
-  bringUp("Finder");
+  bringUp("Finder", true);
 });
 slate.bind("s:j,alt:toggle", function(win) {
-  bringUp("Spotify");
+  bringUp("Spotify", true);
 });
 slate.bind("t:j,alt:toggle", function(win) {
-  bringUp("TextEdit");
+  bringUp("TextEdit", true);
 });
 slate.bind("l:j,alt:toggle", function(win) {
-  bringUp("LimeChat");
+  bringUp("LimeChat", true);
 });
