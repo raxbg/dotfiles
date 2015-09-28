@@ -231,20 +231,27 @@ var hideAll = function() {
 };
 
 var bringUp = function(appName, autoTile) {
+  slate.log("Shortcut: " + appName);
   autoTile = autoTile||false;
   slate.operation('show', {
     "app" : [appName]
   }).run();
 
-  slate.operation('focus', {
-    "app" : appName
-  }).run();
-
   if (autoTile) {
     tileAll();
   } else {
-    slate.window().doOperation(halfScreenCenter);
+    slate.eachApp(function(app){
+      slate.eachWindow(function(win){
+        if(app.name() == appName) {
+          win.doOperation(halfScreenCenter);
+        }
+      });
+    });
   }
+
+  slate.operation('focus', {
+    "app" : appName
+  }).run();
 };
 
 slate.on('windowOpened', function(e, win) {
@@ -252,13 +259,13 @@ slate.on('windowOpened', function(e, win) {
   if (win.title().match(/^chrome-devtools/)) {
     win.doOperation(throwFullScreen(1, win));
   }
-  if (win.isResizable()) {
+  if (win.isResizable() && win.isMain()) {
     tileAll();
   }
 });
 
 slate.on('windowClosed', function(e, app) {
-  tileAll();
+  //tileAll();
 });
 
 slate.on('appClosed', function(e, app) {
