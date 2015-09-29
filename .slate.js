@@ -123,13 +123,9 @@ var throwToScreen = function(direction, win) {
   var newScreen = (currentScreen+direction) % screensCount;
   newScreen = (newScreen < 0) ? (screensCount-1) : newScreen;
 
-  slate.log("Current screen: " + win.screen().id());
-  slate.log("New screen: " + newScreen);
   var winRect = win.rect();
   var scrObj = slate.screenForRef(newScreen);
   var scrRect = scrObj.visibleRect();
-  slate.log(scrRect.width + "x" + scrRect.height);
-  slate.log(winRect.width + "x" + winRect.height);
   win.doOperation("throw", {
     "x" : parseInt((scrRect.width-winRect.width) / 2),
     "y" : parseInt((scrRect.height-winRect.height) / 2),
@@ -137,7 +133,6 @@ var throwToScreen = function(direction, win) {
     "height" : winRect.height,
     "screen" : scrObj
   });
-  slate.log('Window thrown');
 };
 
 var fullScreen = slate.operation("move", {
@@ -241,14 +236,13 @@ var tileAll = function() {
   });
 };
 
-var hideAll = function() {
-  if (!isMode('single')) return;
+var hideAll = function(scrId) {
+  scrId = scrId||slate.screen().id();
 
-  var scrId = slate.screen().id();
   slate.eachApp(function(app) {
     app.eachWindow(function(win) {
       if (win.screen().id() == scrId) {
-        slate.log("Hiding " + app.name() + " from screen " + win.screen().id() + " while aiming at screen " + scrId);
+        slate.log("Hiding " + app.name() + " from screen " + win.screen().id() + " while aiming at screen " + scrId + " and the current screen is " . slate.screen().id());
         slate.operation('hide', {
           "app" : [app.name()]
         }).run();
@@ -267,7 +261,6 @@ var isMode = function(str) {
 };
 
 var bringUp = function(appName, autoTile) {
-  slate.log("Shortcut: " + appName);
   autoTile = autoTile||false;
   slate.operation('show', {
     "app" : [appName]
@@ -277,17 +270,28 @@ var bringUp = function(appName, autoTile) {
     tileAll();
   } else {
     slate.eachApp(function(app){
-      slate.eachWindow(function(win){
-        if(app.name() == appName) {
-          win.doOperation(halfScreenCenter);
-        }
-      });
+      if(app.name() == appName) {
+        slate.eachWindow(function(win){
+            win.doOperation(halfScreenCenter);
+        });
+      }
     });
   }
 
   slate.operation('focus', {
     "app" : appName
   }).run();
+};
+
+var getAppScreen = function (appName) {
+  var scrId = slate.screen().id();
+  slate.eachApp(function(app) {
+    if (app.name() == appName) {
+      scrId = app.mainWindow().screen().id();
+    }
+  });
+
+  return scrId;
 };
 
 slate.on('windowOpened', function(e, win) {
@@ -374,35 +378,51 @@ slate.bind("f:alt,cmd", fullScreenToggle);
 
 //Focus single app
 slate.bind("h:j,cmd", function(win) {
-  hideAll();
+  if (isMode('single')) {
+    hideAll(getAppScreen('HipChat'));
+  }
   bringUp("HipChat");
 });
 slate.bind("i:j,cmd", function(win) {
-  hideAll();
+  if (isMode('single')) {
+    hideAll(getAppScreen('iTerm'));
+  }
   bringUp("iTerm");
 });
 slate.bind("g:j,cmd", function(win) {
-  hideAll();
+  if (isMode('single')) {
+    hideAll(getAppScreen('Google Chrome'));
+  }
   bringUp("Google Chrome");
 });
 slate.bind("m:j,cmd", function(win) {
-  hideAll();
+  if (isMode('single')) {
+    hideAll(getAppScreen('Mail'));
+  }
   bringUp("Mail");
 });
 slate.bind("f:j,cmd", function(win) {
-  hideAll();
+  if (isMode('single')) {
+    hideAll(getAppScreen('Finder'));
+  }
   bringUp("Finder");
 });
 slate.bind("s:j,cmd", function(win) {
-  hideAll();
+  if (isMode('single')) {
+    hideAll(getAppScreen('Spotify'));
+  }
   bringUp("Spotify");
 });
 slate.bind("t:j,cmd", function(win) {
-  hideAll();
+  if (isMode('single')) {
+    hideAll(getAppScreen('TextEdit'));
+  }
   bringUp("TextEdit");
 });
 slate.bind("l:j,cmd", function(win) {
-  hideAll();
+  if (isMode('single')) {
+    hideAll(getAppScreen('LimeChat'));
+  }
   bringUp("LimeChat");
 });
 
