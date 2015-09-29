@@ -1,3 +1,6 @@
+var modes = ['tiling', 'single', 'free'];
+var mode = modes.indexOf('single');
+
 slate.configAll({
 	"defaultToCurrentScreen" : true,
 	"secondsBetweenRepeat" : 0.05,
@@ -114,6 +117,29 @@ var throwFullScreen = function(direction, win) {
   });
 };
 
+var throwToScreen = function(direction, win) {
+  var screensCount = slate.screenCount();
+  var currentScreen = win.screen().id();
+  var newScreen = (currentScreen+direction) % screensCount;
+  newScreen = (newScreen < 0) ? (screensCount-1) : newScreen;
+
+  slate.log("Current screen: " + win.screen().id());
+  slate.log("New screen: " + newScreen);
+  var winRect = win.rect();
+  var scrObj = slate.screenForRef(newScreen);
+  var scrRect = scrObj.visibleRect();
+  slate.log(scrRect.width + "x" + scrRect.height);
+  slate.log(winRect.width + "x" + winRect.height);
+  win.doOperation("throw", {
+    "x" : parseInt((scrRect.width-winRect.width) / 2),
+    "y" : parseInt((scrRect.height-winRect.height) / 2),
+    "width" : winRect.width,
+    "height" : winRect.height,
+    "screen" : scrObj
+  });
+  slate.log('Window thrown');
+};
+
 var fullScreen = slate.operation("move", {
 	"x" : "screenOriginX",
 	"y" : "screenOriginY",
@@ -205,7 +231,7 @@ var tileAll = function() {
           "y" : y,
           "width" : width,
           "height" : height,
-          "screen" : scr.id()
+          "screen" : scr
         });
 
         pos = (pos == 'left') ? 'right' : 'left';
@@ -216,18 +242,28 @@ var tileAll = function() {
 };
 
 var hideAll = function() {
-  return;
-  //var scrId = slate.screen().id();
-  //slate.eachApp(function(app) {
-  //  app.eachWindow(function(win) {
-  //    if (win.screen().id() == scrId) {
-  //      slate.log("Hiding " + app.name() + " from screen " + win.screen().id() + " while aiming at screen " + scrId);
-  //      slate.operation('hide', {
-  //        "app" : [app.name()]
-  //      }).run();
-  //    }
-  //  });
-  //});
+  if (!isMode('single')) return;
+
+  var scrId = slate.screen().id();
+  slate.eachApp(function(app) {
+    app.eachWindow(function(win) {
+      if (win.screen().id() == scrId) {
+        slate.log("Hiding " + app.name() + " from screen " + win.screen().id() + " while aiming at screen " + scrId);
+        slate.operation('hide', {
+          "app" : [app.name()]
+        }).run();
+      }
+    });
+  });
+};
+
+var cycleThroughModes = function() {
+  mode = (mode+1) % modes.length;
+  slate.shell("/usr/bin/osascript -e 'display notification \"Tiling mode changed to " + modes[mode] + "\" with title \"Slate\"'", false);
+};
+
+var isMode = function(str) {
+  return mode == modes.indexOf(str);
 };
 
 var bringUp = function(appName, autoTile) {
@@ -255,21 +291,27 @@ var bringUp = function(appName, autoTile) {
 };
 
 slate.on('windowOpened', function(e, win) {
+  if (isMode('free')) return;
   //TODO: when new window is spawned, move it to the screen less windows (or calculate the area of the new window if it were to be placed on each screen and place it where it will have the largest area)
   if (win.title().match(/^chrome-devtools/)) {
-    win.doOperation(throwFullScreen(1, win));
+    win.doOperation(throwToScreen(1, win));
   }
-  if (win.isResizable() && win.isMain()) {
+  if (win.isResizable() && win.isMain() && isMode('tiling')) {
     tileAll();
   }
 });
 
 slate.on('windowClosed', function(e, app) {
+  if (isMode('free')) return;
   //tileAll();
 });
 
 slate.on('appClosed', function(e, app) {
-  tileAll();
+  if (isMode('free')) return;
+
+  if (isMode('tiling')) {
+    tileAll();
+  }
 });
 
 var grid = slate.operation("grid", {
@@ -317,10 +359,14 @@ slate.bind("right:ctrl,alt", moveRight);
 
 //Throw bindings
 slate.bind("left:alt,cmd", function(win) {
-  throwFullScreen(-1, win);
+  throwToScreen(-1, win);
 });
 slate.bind("right:alt,cmd", function(win) {
-  throwFullScreen(1, win);
+  throwToScreen(1, win);
+});
+
+slate.bind("m:alt,cmd", function(win) {
+  cycleThroughModes();
 });
 
 //Fullscreen toggle
