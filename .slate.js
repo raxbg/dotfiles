@@ -59,24 +59,22 @@ var rightFullHeight = slate.operation("move", {
 	"height" : "screenSizeY"
 });
 
-var throwFullScreen = function(direction, win) {
+var throwToScreen = function(dest, win) {
   var screensCount = slate.screenCount();
   var currentScreen = win.screen().id();
-  var newScreen = (currentScreen+direction) % screensCount;
-  newScreen = (newScreen < 0) ? (screensCount-1) : newScreen;
-  win.doOperation("throw", {
-    "x" : "screenOriginX",
-    "y" : "screenOriginY",
-    "width" : "screenSizeX",
-    "height" : "screenSizeY",
-    "screen" : newScreen
-  });
-};
+  var newScreen;
 
-var throwToScreen = function(direction, win) {
-  var screensCount = slate.screenCount();
-  var currentScreen = win.screen().id();
-  var newScreen = (currentScreen+direction) % screensCount;
+  switch (dest) {
+    case '>':
+      newScreen = (currentScreen+1) % screensCount;
+      break;
+    case '<':
+      newScreen = (currentScreen-1) % screensCount;
+      break;
+    default:
+      newScreen = dest;
+      break;
+  }
   newScreen = (newScreen < 0) ? (screensCount-1) : newScreen;
 
   var winRect = win.rect();
@@ -312,10 +310,10 @@ slate.bind("right:ctrl,cmd", rightFullHeight);
 
 //Throw bindings
 slate.bind("left:alt,cmd", function(win) {
-  throwToScreen(-1, win);
+  throwToScreen('<', win);
 });
 slate.bind("right:alt,cmd", function(win) {
-  throwToScreen(1, win);
+  throwToScreen('>', win);
 });
 
 slate.bind("m:alt,cmd", function(win) {
