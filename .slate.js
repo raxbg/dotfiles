@@ -1,6 +1,3 @@
-var modes = ['tiling', 'single', 'free'];
-var mode = modes.indexOf('single');
-
 slate.configAll({
 	"defaultToCurrentScreen" : true,
 	"secondsBetweenRepeat" : 0.05,
@@ -15,9 +12,8 @@ slate.configAll({
 	"windowHintsSpreadPadding" : 5,
 });
 
-var focusChrome = slate.operation("focus", {
-	"app" : "Google Chrome"
-});
+var modes = ['tiling', 'single', 'free'];
+var mode = modes.indexOf('single');
 
 var focusAbove = slate.operation("focus", {
 	"direction" : "above"
@@ -33,46 +29,6 @@ var focusLeft = slate.operation("focus", {
 
 var focusRight = slate.operation("focus", {
 	"direction" : "right"
-});
-
-var makeHigher = slate.operation("resize", {
-	"width" : "+0",
-	"height" : "+10%"
-});
-
-var makeShorter = slate.operation("resize", {
-	"width" : "+0",
-	"height" : "-10%"
-});
-
-var makeWider = slate.operation("resize", {
-	"width" : "+10%",
-	"height" : "+0"
-});
-
-var makeThiner = slate.operation("resize", {
-	"width" : "-10%",
-	"height" : "+0"
-});
-
-var moveLeft = slate.operation("nudge", {
-	"x" : "-10%",
-	"y" : "+0"
-});
-
-var moveRight = slate.operation("nudge", {
-	"x" : "+10%",
-	"y" : "+0"
-});
-
-var moveUp = slate.operation("nudge", {
-	"x" : "+0",
-	"y" : "-10%"
-});
-
-var moveDown = slate.operation("nudge", {
-	"x" : "+0",
-	"y" : "+10%"
 });
 
 var topFullWidth = slate.operation("move", {
@@ -126,12 +82,17 @@ var throwToScreen = function(direction, win) {
   var winRect = win.rect();
   var scrObj = slate.screenForRef(newScreen);
   var scrRect = scrObj.visibleRect();
-  win.doOperation("throw", {
-    "x" : parseInt((scrRect.width-winRect.width) / 2),
-    "y" : parseInt((scrRect.height-winRect.height) / 2),
-    "width" : winRect.width,
-    "height" : winRect.height,
-    "screen" : scrObj
+
+  var offsetLeft = 0;
+  for (var x = 0; x < newScreen; x++) {
+    offsetLeft += slate.screenForRef(x).visibleRect().width;
+  }
+
+  win.doOperation("move", {
+    x : parseInt((scrRect.width-winRect.width) / 2) + offsetLeft,
+    y : parseInt((scrRect.height-winRect.height) / 2),
+    width : winRect.width,
+    height : winRect.height
   });
 };
 
@@ -348,18 +309,6 @@ slate.bind("up:ctrl,cmd", topFullWidth);
 slate.bind("down:ctrl,cmd", bottomFullWidth);
 slate.bind("left:ctrl,cmd", leftFullHeight);
 slate.bind("right:ctrl,cmd", rightFullHeight);
-
-//Resize bindings
-/*slate.bind("j:ctrl,alt", makeHigher);
-slate.bind("k:ctrl,alt", makeShorter);
-slate.bind("h:ctrl,alt", makeWider);
-slate.bind("l:ctrl,alt", makeThiner);*/
-
-//Move bindings
-slate.bind("up:ctrl,alt", moveUp);
-slate.bind("down:ctrl,alt", moveDown);
-slate.bind("left:ctrl,alt", moveLeft);
-slate.bind("right:ctrl,alt", moveRight);
 
 //Throw bindings
 slate.bind("left:alt,cmd", function(win) {
