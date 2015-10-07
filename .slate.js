@@ -81,16 +81,20 @@ var throwToScreen = function(dest, win) {
   var scrObj = slate.screenForRef(newScreen);
   var scrRect = scrObj.visibleRect();
 
+  move(win, parseInt((scrRect.width-winRect.width) / 2), parseInt((scrRect.height-winRect.height) / 2), winRect.width, winRect.height, newScreen);
+};
+
+var move = function(win, xPos, yPos, wdth, hght, scrId) {
   var offsetLeft = 0;
-  for (var x = 0; x < newScreen; x++) {
+  for (var x = 0; x < scrId; x++) {
     offsetLeft += slate.screenForRef(x).visibleRect().width;
   }
 
   win.doOperation("move", {
-    x : parseInt((scrRect.width-winRect.width) / 2) + offsetLeft,
-    y : parseInt((scrRect.height-winRect.height) / 2),
-    width : winRect.width,
-    height : winRect.height
+    x : xPos + offsetLeft,
+    y : yPos,
+    width : wdth,
+    height : hght
   });
 };
 
@@ -136,11 +140,17 @@ var countWindowsOnScreen = function(scrId) {
 };
 
 var tileAll = function() {
+  var scrId = -1;
+
+  if (arguments.length && !isNaN(parseFloat(arguments[0]))) {
+    scrId = arguments[0];
+  }
+
   var scr, rect, topLeftX, topLeftY, scrWidth, scrHeight;
   try {
-    scr = slate.screen();
+    scr = (scrId > -1) ? slate.screenForRef(scrId) : slate.screen();
     rect = scr.visibleRect();
-    topLeftX = rect.x;
+    topLeftX = 0;
     topLeftY = rect.y;
     scrWidth = rect.width;
     scrHeight = rect.height;
@@ -180,13 +190,7 @@ var tileAll = function() {
         var width = scrWidth/2;
         var height = scrHeight / sideWinCounts;
 
-        win.doOperation("move", {
-          "x" : x,
-          "y" : y,
-          "width" : width,
-          "height" : height,
-          "screen" : scr
-        });
+        move(win, x, y, width, height, scr.id());
 
         pos = (pos == 'left') ? 'right' : 'left';
         if (pos == 'left' && posWindowsCounts[0] == winCountLeft) pos = 'right';
@@ -255,12 +259,28 @@ var getAppScreen = function (appName) {
 
 slate.on('windowOpened', function(e, win) {
   if (isMode('free')) return;
-  //TODO: when new window is spawned, move it to the screen less windows (or calculate the area of the new window if it were to be placed on each screen and place it where it will have the largest area)
+
+  var targetScrId = 0;
+
   if (win.title().match(/^chrome-devtools/)) {
     win.doOperation(throwToScreen(1, win));
+  } else {
+    var minScreenWindows = Number.MAX_VALUE;
+    slate.eachScreen(function(scr){
+      var count = countWindowsOnScreen(scr.id());
+      if (count < minScreenWindows) {
+        minScreenWindows = count;
+        targetScrId = scr.id();
+      }
+    });
   }
+
+  if (win.screen().id() != targetScrId) {
+    win.doOperation(throwToScreen(targetScrId, win));
+  }
+
   if (win.isResizable() && win.isMain() && isMode('tiling')) {
-    tileAll();
+    tileAll(targetScrId);
   }
 });
 
