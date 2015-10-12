@@ -54,7 +54,7 @@ plugins=(git colored-man osx zsh-syntax-highlighting)
 
 # User configuration
 
-export PATH="/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/bin:/opt/local/bin:/opt/local/sbin"
+export PATH="/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/bin:/usr/local/sbin"
 # export MANPATH="/usr/local/man:$MANPATH"
 
 source $ZSH/oh-my-zsh.sh

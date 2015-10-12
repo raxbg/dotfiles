@@ -264,6 +264,8 @@ slate.on('windowOpened', function(e, win) {
 
   if (win.title().match(/^chrome-devtools/)) {
     win.doOperation(throwToScreen(1, win));
+  } else if (win.app().name() == "Finder") {
+    targetScrId = win.screen().id();
   } else {
     var minScreenWindows = Number.MAX_VALUE;
     slate.eachScreen(function(scr){
