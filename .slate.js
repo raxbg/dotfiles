@@ -14,6 +14,8 @@ slate.configAll({
 
 var modes = ['tiling', 'single', 'free'];
 var mode = modes.indexOf('single');
+var pid_size = {};
+var win_modes = ['fullscreen', 'ninety_percent'];
 
 var focusAbove = slate.operation("focus", {
 	"direction" : "above"
@@ -98,23 +100,29 @@ var move = function(win, xPos, yPos, wdth, hght, scrId) {
   });
 };
 
-var fullScreen = slate.operation("move", {
-	"x" : "screenOriginX",
-	"y" : "screenOriginY",
-	"width" : "screenSizeX",
-	"height" : "screenSizeY"
-});
+var fullscreen = function(win) {
+  var scr = win.screen();
+  var rect = scr.visibleRect();
+  move(win, rect.x, rect.y, rect.width, rect.height, scr);
+};
 
-var halfScreenCenter = slate.operation("move", {
-	"x" : "screenSizeX*0.05",
-	"y" : "screenSizeY*0.05",
-	"width" : "screenSizeX*0.9",
-	"height" : "screenSizeY*0.9"
-});
+var ninety_percent = function(win) {
+  var scr = win.screen();
+  var rect = scr.visibleRect();
+  move(win, rect.x + rect.width*0.05, rect.y + rect.height*0.05, rect.width*0.9, rect.height*0.9, scr);
+};
 
-var fullScreenToggle = slate.operation("chain", {
-	"operations" : [fullScreen, halfScreenCenter]
-});
+var fullScreenToggle = function(win) {
+  var pid = win.pid();
+  var new_mode;
+  if (!pid_size[pid]) {
+    pid_size[pid] = win_modes.length-1;//This is set to the last available mode, because the next available mode will be selected, which will be the first one
+  }
+
+  new_mode = win_modes[++pid_size[pid] % win_modes.length];
+
+  eval(new_mode + '(win)');
+};
 
 var hint = slate.operation("hint");
 slate.bind("f:alt", hint);
