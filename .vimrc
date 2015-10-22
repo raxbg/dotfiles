@@ -24,6 +24,7 @@ source /usr/local/lib/python2.7/site-packages/powerline/bindings/vim/plugin/powe
 set laststatus=2
 set showtabline=2
 set noshowmode
+set backspace=indent,eol,start
 filetype plugin indent on
 autocmd Filetype javascript setlocal ts=2 sts=2 sw=2 expandtab
 autocmd Filetype php setlocal ts=4 sts=4 sw=4 expandtab omnifunc=phpcomplete_extended#CompletePHP
