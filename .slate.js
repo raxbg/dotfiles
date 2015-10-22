@@ -231,27 +231,41 @@ var isMode = function(str) {
   return mode == modes.indexOf(str);
 };
 
+var isOpen = function(appName) {
+  var isOpen = false;
+  slate.eachApp(function(app) {
+    if (app.name() == appName) isOpen = true;
+  });
+  return isOpen;
+}
+
 var bringUp = function(appName, autoTile) {
-  autoTile = autoTile||false;
-  slate.operation('show', {
-    "app" : [appName]
-  }).run();
+  if (isOpen(appName)) {
+    autoTile = autoTile||false;
+    slate.operation('show', {
+      "app" : [appName]
+    }).run();
 
-  if (autoTile) {
-    tileAll();
+    if (autoTile) {
+      tileAll();
+    } else {
+      slate.eachApp(function(app){
+        if(app.name() == appName) {
+          slate.eachWindow(function(win){
+              win.doOperation(halfScreenCenter);
+          });
+        }
+      });
+    }
+
+    slate.operation('focus', {
+      "app" : appName
+    }).run();
   } else {
-    slate.eachApp(function(app){
-      if(app.name() == appName) {
-        slate.eachWindow(function(win){
-            win.doOperation(halfScreenCenter);
-        });
-      }
-    });
+    slate.operation('shell', {
+      "command": ("/usr/bin/open -a " + appName)
+    }).run();
   }
-
-  slate.operation('focus', {
-    "app" : appName
-  }).run();
 };
 
 var getAppScreen = function (appName) {
