@@ -19,13 +19,14 @@ set laststatus=2
 set showtabline=2
 set noshowmode
 set backspace=indent,eol,start
+set tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 let g:user_emmet_leader_key='<C-Z>'
 let mapleader=','
 syntax enable
 colorscheme flattown
 
 "Configure indents
-autocmd Filetype javascript,html,css setlocal ts=2 sts=2 sw=2 expandtab
+autocmd Filetype javascript,html,css,smarty setlocal ts=2 sts=2 sw=2 expandtab
 autocmd Filetype php setlocal ts=4 sts=4 sw=4 expandtab omnifunc=phpcomplete_extended#CompletePHP
 autocmd Filetype c,c++,java setlocal ts=4 sts=4 sw=4 expandtab
 
@@ -40,6 +41,7 @@ autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
 let g:indent_guides_auto_colors=0
 let g:indent_guides_guide_size=1
 let g:indent_guides_enable_on_vim_startup=1
+let g:indent_guides_exclude_filetypes = ['help', 'nerdtree']
 hi IndentGuidesEven ctermbg=238
 hi IndentGuidesOdd ctermbg=236
 
