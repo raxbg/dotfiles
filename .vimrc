@@ -10,7 +10,7 @@ Plugin 'blerins/flattown'
 Plugin 'nathanaelkane/vim-indent-guides'
 Plugin 'ervandew/supertab'
 Plugin 'joonty/vdebug.git'
-Plugin 'hhvm/vim-hack'
+"Plugin 'hhvm/vim-hack'
 call vundle#end()
 
 filetype plugin indent on
