@@ -61,4 +61,7 @@ map + ddkP
 map q :q<CR>
 map W :w<CR>
 map <F1> :echo @%<CR>
+map <F2> :set scb!<CR>
 map <F4> mzgg=G`z
+map <F11> :diffthis<CR>
+map <F12> :diffoff<CR>
