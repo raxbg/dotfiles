@@ -147,6 +147,18 @@ var countWindowsOnScreen = function(scrId) {
   return totalWindows;
 };
 
+var countWindowsByApp = function(appName) {
+  var totalWindows = 0;
+  slate.eachApp(function(app) {
+    if (app.name() == appName) {
+      app.eachWindow(function(win) {
+          totalWindows++;
+      });
+    }
+  });
+  return totalWindows;
+}
+
 var tileAll = function() {
   var scrId = -1;
 
@@ -279,6 +291,34 @@ var getAppScreen = function (appName) {
   return scrId;
 };
 
+slate.on('appOpened', function(e, app) {
+  if (isMode('free')) return;
+
+  var targetScrId = 0;
+  var win = app.mainWindow();
+
+  var minScreenWindows = Number.MAX_VALUE;
+  slate.eachScreen(function(scr){
+    var count = countWindowsOnScreen(scr.id());
+    if (scr.id() == win.screen().id()) {
+      count--;// don't count the current window
+    }
+
+    if (count < minScreenWindows) {
+      minScreenWindows = count;
+      targetScrId = scr.id();
+    }
+  });
+
+  if (win.screen().id() != targetScrId) {
+    win.doOperation(throwToScreen(targetScrId, win));
+  }
+
+  if (win.isResizable() && isMode('tiling')) {
+    tileAll(targetScrId);
+  }
+});
+
 slate.on('windowOpened', function(e, win) {
   if (isMode('free')) return;
 
@@ -286,21 +326,6 @@ slate.on('windowOpened', function(e, win) {
 
   if (win.title().match(/^chrome-devtools/)) {
     win.doOperation(throwToScreen(1, win));
-  } else if (win.app().name() == "Finder") {
-    targetScrId = win.screen().id();
-  } else {
-    var minScreenWindows = Number.MAX_VALUE;
-    slate.eachScreen(function(scr){
-      var count = countWindowsOnScreen(scr.id());
-      if (count < minScreenWindows) {
-        minScreenWindows = count;
-        targetScrId = scr.id();
-      }
-    });
-  }
-
-  if (win.screen().id() != targetScrId) {
-    win.doOperation(throwToScreen(targetScrId, win));
   }
 
   if (win.isResizable() && win.isMain() && isMode('tiling')) {
