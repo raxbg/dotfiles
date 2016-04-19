@@ -81,9 +81,11 @@
 	<key>MaxVertically</key>
 	<false/>
 	<key>NSNavLastRootDirectory</key>
-	<string>~/Documents</string>
+	<string>~/.dotfiles</string>
 	<key>NSNavPanelExpandedSizeForOpenMode</key>
 	<string>{712, 448}</string>
+	<key>NSNavPanelExpandedSizeForSaveMode</key>
+	<string>{712, 565}</string>
 	<key>NSQuotedKeystrokeBinding</key>
 	<string></string>
 	<key>NSRepeatCountBinding</key>
@@ -96,13 +98,13 @@
 		<integer>1</integer>
 	</dict>
 	<key>NSWindow Frame NSFontPanel</key>
-	<string>3049 330 445 77 1920 0 1920 1057 </string>
+	<string>451 183 773 268 0 0 1440 877 </string>
 	<key>NSWindow Frame Preferences</key>
-	<string>2250 259 924 485 1920 0 1920 1057 </string>
+	<string>269 110 605 485 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>96 44 1726 960 0 0 1920 1057 </string>
+	<string>282 132 1292 858 0 0 1920 1057 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
-	<string>665 339 585 426 0 0 1920 1057 </string>
+	<string>275 101 585 426 0 0 1920 1057 </string>
 	<key>New Bookmarks</key>
 	<array>
 		<dict>
@@ -843,10 +845,12 @@
 			<string>/Users/ivailo</string>
 		</dict>
 	</array>
+	<key>NoSyncHaveShownPromoWithId_4</key>
+	<true/>
 	<key>NoSyncTimeOfLastPromo</key>
-	<real>465574081.74965101</real>
+	<real>477605879.08803302</real>
 	<key>NoSyncTimeOfLastPromoDownload</key>
-	<real>469955576.35610402</real>
+	<real>481152303.784181</real>
 	<key>OnlyWhenMoreTabs</key>
 	<true/>
 	<key>OpenArrangementAtStartup</key>
@@ -855,6 +859,8 @@
 	<false/>
 	<key>OpenTmuxWindowsIn</key>
 	<integer>0</integer>
+	<key>PMPrintingExpandedStateForPrint2</key>
+	<false/>
 	<key>PassOnControlClick</key>
 	<false/>
 	<key>PasteFromClipboard</key>
@@ -893,7 +899,7 @@
 		</dict>
 	</dict>
 	<key>PrefsCustomFolder</key>
-	<string>~/.dotfiles</string>
+	<string>/Users/raxbg/.dotfiles</string>
 	<key>PromptOnQuit</key>
 	<true/>
 	<key>QuitWhenAllWindowsClosed</key>
@@ -909,7 +915,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2015-11-24T09:41:46Z</date>
+	<date>2016-03-31T19:47:25Z</date>
 	<key>SavePasteHistory</key>
 	<false/>
 	<key>ShowBookmarkName</key>
