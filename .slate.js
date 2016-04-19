@@ -62,6 +62,9 @@ var rightFullHeight = slate.operation("move", {
 });
 
 var throwToScreen = function(dest, win) {
+  var winRect = win.rect();
+  if (!win.isMovable() || !(winRect.width && winRect.height)) return;
+
   var screensCount = slate.screenCount();
   var currentScreen = win.screen().id();
   var newScreen;
@@ -79,7 +82,6 @@ var throwToScreen = function(dest, win) {
   }
   newScreen = (newScreen < 0) ? (screensCount-1) : newScreen;
 
-  var winRect = win.rect();
   var scrObj = slate.screenForRef(newScreen);
   var scrRect = scrObj.visibleRect();
 
@@ -311,7 +313,7 @@ slate.on('appOpened', function(e, app) {
   });
 
   if (win.screen().id() != targetScrId) {
-    win.doOperation(throwToScreen(targetScrId, win));
+    throwToScreen(targetScrId, win);
   }
 
   if (win.isResizable() && isMode('tiling')) {
@@ -325,7 +327,7 @@ slate.on('windowOpened', function(e, win) {
   var targetScrId = 0;
 
   if (win.title().match(/^chrome-devtools/)) {
-    win.doOperation(throwToScreen(1, win));
+    throwToScreen(1, win);
   }
 
   if (win.isResizable() && win.isMain() && isMode('tiling')) {
