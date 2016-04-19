@@ -4,6 +4,7 @@ filetype off
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 Plugin 'scrooloose/nerdtree'
+Plugin 'taglist.vim'
 Plugin 'scrooloose/syntastic'
 Plugin 'kien/ctrlp.vim'
 Plugin 'blerins/flattown'
@@ -60,8 +61,9 @@ map _ ddp
 map + ddkP
 map q :q<CR>
 map W :w<CR>
-map <F1> :echo @%<CR>
-map <F2> :set scb!<CR>
+map <F1> :NERDTreeToggle<CR>
+map <F2> :TlistToggle<CR>
+map <F3> :set scb!<CR>
 map <F4> mzgg=G`z
 map <F11> :diffthis<CR>
 map <F12> :diffoff<CR>
