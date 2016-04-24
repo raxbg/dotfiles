@@ -251,11 +251,12 @@ var isOpen = function(appName) {
     if (app.name() == appName) isOpen = true;
   });
   return isOpen;
-}
+};
 
 var bringUp = function(appName, autoTile) {
   if (isOpen(appName)) {
     autoTile = autoTile||false;
+
     slate.operation('show', {
       "app" : [appName]
     }).run();
@@ -263,13 +264,32 @@ var bringUp = function(appName, autoTile) {
     if (autoTile) {
       tileAll();
     } else {
-      slate.eachApp(function(app){
-        if(app.name() == appName) {
-          slate.eachWindow(function(win){
-              win.doOperation(halfScreenCenter);
-          });
-        }
+      var otherApps = {};
+      var appScreens = [];
+
+      slate.eachScreen(function(screen) {
+        otherApps[screen.id()] = [];
       });
+
+      slate.eachApp(function(app){
+        app.eachWindow(function(win){
+          if(app.name() == appName) {
+            if (appScreens.indexOf(win.screen().id()) == -1) {
+              appScreens.push(win.screen().id());
+            }
+          } else {
+            if (otherApps[win.screen().id()].indexOf(app.name()) == -1) {
+              otherApps[win.screen().id()].push(app.name());
+            }
+          }
+        });
+      });
+
+      for (var x in appScreens) {
+        slate.operation("hide", {
+          "app": otherApps[appScreens[x]]
+        }).run();
+      }
     }
 
     slate.operation('focus', {
