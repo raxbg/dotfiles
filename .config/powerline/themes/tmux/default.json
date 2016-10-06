@@ -1,0 +1,51 @@
+{
+	"segments": {
+		"right": [
+            {
+                "function": "powerline.segments.common.players.spotify",
+                "name": "player"
+            },
+			{
+				"function": "powerline.segments.common.sys.uptime",
+				"priority": 50
+			},
+			{
+				"function": "powerline.segments.common.sys.system_load",
+				"priority": 50
+			},
+			{
+				"function": "powerline.segments.common.time.date"
+			},
+			{
+				"function": "powerline.segments.common.time.date",
+				"name": "time",
+				"args": {
+					"format": "%H:%M",
+					"istime": true
+				}
+			},
+            {
+                "function": "powerline.segments.common.wthr.weather",
+                "name": "weather",
+                "priority": 50,
+                "args": {
+                    "unit": "C",
+                    "icons": {
+                        "day":           "〇",
+                        "blustery":      "⚑",
+                        "rainy":         "☔",
+                        "cloudy":        "☁",
+                        "snowy":         "❅",
+                        "stormy":        "☈",
+                        "foggy":         "≡",
+                        "sunny":         "☼",
+                        "night":         "☾",
+                        "windy":         "☴",
+                        "not_available": "�",
+                        "unknown":       "⚠"
+                    }
+                }
+            }
+		]
+	}
+}
