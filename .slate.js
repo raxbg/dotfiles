@@ -90,8 +90,15 @@ var throwToScreen = function(dest, win) {
 
 var move = function(win, xPos, yPos, wdth, hght, scrId) {
   var offsetLeft = 0;
+  var multiplier = -1;
+  var scr;
+
   for (var x = 0; x < scrId; x++) {
-    offsetLeft += slate.screenForRef(x).visibleRect().width;
+    scr = slate.screenForRef(x);
+    if (scr.isMain()) multiplier = 1;
+
+    //offsetLeft += scr.visibleRect().width * multiplier;
+    offsetLeft += scr.visibleRect().width;
   }
 
   win.doOperation("move", {
