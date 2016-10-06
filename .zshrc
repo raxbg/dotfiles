@@ -2,6 +2,7 @@
 export ZSH=/Users/$USER/.oh-my-zsh
 export EDITOR=vim
 export VISUAL=vim
+export HOMEBREW_MAKE_JOBS=8
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
@@ -55,7 +56,7 @@ plugins=(git colored-man osx zsh-syntax-highlighting)
 
 # User configuration
 
-export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/local_bin:/Users/$USER/bin"
+export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/local_bin:/Users/$USER/bin:/Users/$USER/android-ndk"
 # export MANPATH="/usr/local/man:$MANPATH"
 
 source $ZSH/oh-my-zsh.sh
