@@ -87,3 +87,4 @@ source /Users/$USER/.logins/aliases.sh
 # alias zshconfig="mate ~/.zshrc"
 #/ alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ls="ls -Glah"
+alias mvim="open -a MacVim"
