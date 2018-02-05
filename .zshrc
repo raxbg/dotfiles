@@ -56,7 +56,7 @@ plugins=(git colored-man osx zsh-syntax-highlighting)
 
 # User configuration
 
-export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/local_bin:/Users/$USER/bin:/Users/$USER/android-ndk"
+export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/local_bin:/Users/$USER/bin:/Users/$USER/android-ndk:/Users/$USER/Library/Python/2.7/bin"
 # export MANPATH="/usr/local/man:$MANPATH"
 
 source $ZSH/oh-my-zsh.sh
@@ -88,3 +88,5 @@ source /Users/$USER/.logins/aliases.sh
 #/ alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ls="ls -Glah"
 alias mvim="open -a MacVim"
+alias .mysql="mysql -u\$(php -r 'error_reporting(0); include \"config.php\"; echo DB_USERNAME;') -p\$(php -r 'error_reporting(0); include \"config.php\"; echo DB_PASSWORD;') \$(php -r 'error_reporting(0); include \"config.php\"; echo DB_DATABASE;')"
+alias .mysqldump="mysqldump -u\$(php -r 'error_reporting(0); include \"config.php\"; echo DB_USERNAME;') -p\$(php -r 'error_reporting(0); include \"config.php\"; echo DB_PASSWORD;') \$(php -r 'error_reporting(0); include \"config.php\"; echo DB_DATABASE;')"

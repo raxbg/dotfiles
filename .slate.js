@@ -424,9 +424,9 @@ slate.bind("f:alt,cmd", fullScreenToggle);
 //Focus single app
 slate.bind("h:j,cmd", function(win) {
   if (isMode('single')) {
-    hideAll(getAppScreen('HipChat'));
+    hideAll(getAppScreen('Slack'));
   }
-  bringUp("HipChat");
+  bringUp("Slack");
 });
 slate.bind("i:j,cmd", function(win) {
   if (isMode('single')) {
@@ -473,7 +473,7 @@ slate.bind("l:j,cmd", function(win) {
 
 //Focus on multiple apps
 slate.bind("h:j,alt:toggle", function(win) {
-  bringUp("HipChat", true);
+  bringUp("Slack", true);
 });
 slate.bind("i:j,alt:toggle", function(win) {
   bringUp("iTerm", true);

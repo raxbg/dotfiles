@@ -15,7 +15,8 @@ Plugin 'joonty/vdebug.git'
 call vundle#end()
 
 filetype plugin indent on
-source /usr/local/lib/python2.7/site-packages/powerline/bindings/vim/plugin/powerline.vim
+"source /usr/local/lib/python2.7/site-packages/powerline/bindings/vim/plugin/powerline.vim
+source /Users/ivailo/Library/Python/2.7/lib/python/site-packages/powerline/bindings/vim/plugin/powerline.vim
 
 if has('gui_running')
     set guifont=Meslo\ LG\ S\ DZ\ Regular\ for\ Powerline
@@ -31,6 +32,14 @@ let g:user_emmet_leader_key='<C-Z>'
 let mapleader=','
 syntax enable
 colorscheme flattown
+
+augroup filetypedetect
+    au BufRead,BufNewFile *.tpl set filetype=html
+augroup END
+
+augroup filetypedetect
+    au BufRead,BufNewFile *.twig set filetype=html
+augroup END
 
 "Configure indents
 autocmd Filetype javascript,html,css,smarty setlocal ts=2 sts=2 sw=2 expandtab
