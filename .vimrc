@@ -11,11 +11,18 @@ Plugin 'blerins/flattown'
 Plugin 'nathanaelkane/vim-indent-guides'
 Plugin 'ervandew/supertab'
 Plugin 'joonty/vdebug.git'
+Plugin 'vim-airline/vim-airline'
+"Plugin 'vim-airline/vim-airline-themes'
 "Plugin 'hhvm/vim-hack'
 call vundle#end()
 
 filetype plugin indent on
-source /usr/local/lib/python2.7/site-packages/powerline/bindings/vim/plugin/powerline.vim
+"if has('nvim') 
+"    "source /usr/lib/python3.6/site-packages/powerline/bindings/vim/plugin/powerline.vim
+"else
+"    source /usr/lib/python3.6/site-packages/powerline/bindings/vim/plugin/powerline.vim
+"endif
+"source /usr/local/lib/python2.7/site-packages/powerline/bindings/vim/plugin/powerline.vim
 
 if has('gui_running')
     set guifont=Meslo\ LG\ S\ DZ\ Regular\ for\ Powerline

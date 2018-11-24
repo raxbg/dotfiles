@@ -1,8 +1,7 @@
 # Path to your oh-my-zsh installation.
-export ZSH=/Users/$USER/.oh-my-zsh
+export ZSH=$HOME/.oh-my-zsh
 export EDITOR=vim
 export VISUAL=vim
-export HOMEBREW_MAKE_JOBS=8
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
@@ -52,15 +51,14 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git colored-man osx zsh-syntax-highlighting)
+plugins=(git colored-man zsh-syntax-highlighting)
 
 # User configuration
 
-export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/local_bin:/Users/$USER/bin:/Users/$USER/android-ndk"
-# export MANPATH="/usr/local/man:$MANPATH"
+export PATH=$PATH:$HOME/unix_scripts:$HOME/android/platform-tools
 
 source $ZSH/oh-my-zsh.sh
-source /Users/$USER/.logins/aliases.sh
+##source /home/$USER/.logins/aliases.sh
 
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
@@ -86,5 +84,4 @@ source /Users/$USER/.logins/aliases.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 #/ alias ohmyzsh="mate ~/.oh-my-zsh"
-alias ls="ls -Glah"
-alias mvim="open -a MacVim"
+alias ls="ls -Glah --color=auto"
