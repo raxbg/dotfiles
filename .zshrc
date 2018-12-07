@@ -58,6 +58,7 @@ plugins=(git colored-man zsh-syntax-highlighting)
 # User configuration
 
 export PATH=$PATH:$HOME/unix_scripts:$HOME/android/platform-tools
+export SITEPACKPATH=$(python -c "import os; print(os.path.dirname(os.__file__))")/site-packages
 
 source $ZSH/oh-my-zsh.sh
 ##source /home/$USER/.logins/aliases.sh
