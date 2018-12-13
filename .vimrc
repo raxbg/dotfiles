@@ -78,3 +78,8 @@ map <F3> :set scb!<CR>
 map <F4> mzgg=G`z
 map <F11> :diffthis<CR>
 map <F12> :diffoff<CR>
+
+"Gonvim mappings
+map <A-n> :GonvimWorkspaceNew<CR>
+map <A-h> :GonvimWorkspaceNext<CR>
+map <A-l> :GonvimWorkspacePrevious<CR>
