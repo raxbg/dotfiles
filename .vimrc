@@ -10,7 +10,7 @@ Plugin 'kien/ctrlp.vim'
 Plugin 'blerins/flattown'
 Plugin 'nathanaelkane/vim-indent-guides'
 Plugin 'ervandew/supertab'
-Plugin 'joonty/vdebug.git'
+"Plugin 'joonty/vdebug.git'
 Plugin 'vim-airline/vim-airline'
 "Plugin 'vim-airline/vim-airline-themes'
 "Plugin 'hhvm/vim-hack'
@@ -40,7 +40,7 @@ syntax enable
 colorscheme flattown
 
 "Configure indents
-autocmd Filetype javascript,html,css,smarty setlocal ts=2 sts=2 sw=2 expandtab
+autocmd Filetype javascript,html,css,smarty,yml,yaml setlocal ts=2 sts=2 sw=2 expandtab
 autocmd Filetype php setlocal ts=4 sts=4 sw=4 expandtab omnifunc=phpcomplete_extended#CompletePHP
 autocmd Filetype c,c++,java setlocal ts=4 sts=4 sw=4 expandtab
 
@@ -66,8 +66,6 @@ map <C-h> :tabp<CR>
 map <C-l> :tabn<CR>
 map <C-j> <C-F>
 map <C-k> <C-U>
-map <C-m> o<Esc>
-map <C-q> :tabe ~/.vimrc<CR>
 map _ ddp
 map + ddkP
 map q :q<CR>
