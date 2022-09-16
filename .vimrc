@@ -43,7 +43,6 @@ let mapleader=','
 let g:pdv_template_dir = $HOME ."/.vim/bundle/pdv/templates_snip"
 syntax enable
 colorscheme flattown
-noremap <C-i> :call pdv#DocumentWithSnip()<CR>
 
 "Configure indents
 autocmd Filetype javascript,html,css,smarty,yml,yaml setlocal ts=2 sts=2 sw=2 expandtab
@@ -82,6 +81,7 @@ map <F3> :set scb!<CR>
 map <F4> mzgg=G`z
 map <F11> :diffthis<CR>
 map <F12> :diffoff<CR>
+map <C-i> :call pdv#DocumentWithSnip()<CR>
 
 "Gonvim mappings
 map <A-n> :GonvimWorkspaceNew<CR>
