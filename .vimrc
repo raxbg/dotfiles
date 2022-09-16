@@ -14,6 +14,10 @@ Plugin 'ervandew/supertab'
 Plugin 'vim-airline/vim-airline'
 "Plugin 'vim-airline/vim-airline-themes'
 "Plugin 'hhvm/vim-hack'
+Plugin 'editorconfig/editorconfig-vim'
+Plugin 'tobyS/pdv'
+Plugin 'tobyS/vmustache'
+Plugin 'SirVer/ultisnips'
 call vundle#end()
 
 filetype plugin indent on
@@ -36,8 +40,10 @@ set backspace=indent,eol,start
 set tabstop=4 softtabstop=4 shiftwidth=4 expandtab
 let g:user_emmet_leader_key='<C-Z>'
 let mapleader=','
+let g:pdv_template_dir = $HOME ."/.vim/bundle/pdv/templates_snip"
 syntax enable
 colorscheme flattown
+noremap <C-i> :call pdv#DocumentWithSnip()<CR>
 
 "Configure indents
 autocmd Filetype javascript,html,css,smarty,yml,yaml setlocal ts=2 sts=2 sw=2 expandtab
