@@ -82,8 +82,16 @@ map <F4> mzgg=G`z
 map <F11> :diffthis<CR>
 map <F12> :diffoff<CR>
 map <C-i> :call pdv#DocumentWithSnip()<CR>
+map <S-t> :bo ter ++rows=15<CR>
 
-"Gonvim mappings
-map <A-n> :GonvimWorkspaceNew<CR>
-map <A-h> :GonvimWorkspaceNext<CR>
-map <A-l> :GonvimWorkspacePrevious<CR>
+"Split movement
+map <S-h> <C-w>H
+map <S-l> <C-w>L
+map <S-j> <C-w>J
+map <S-k> <C-w>K
+
+"Split resizing
+"map <C-H> 5<C-w><
+"map <C-L> 5<C-w>>
+"map <C-J> 5<C-w>-
+"map <C-K> 5<C-w>+
