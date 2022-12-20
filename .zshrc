@@ -4,6 +4,8 @@ export EDITOR=vim
 export VISUAL=vim
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
+export UID=$UID
+export GID=$GID
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
