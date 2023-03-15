@@ -1,16 +1,19 @@
-if !exists('g:vscode')
-    set nocompatible
-    filetype off
+set nocompatible
+filetype off
 
-    set rtp+=~/.vim/bundle/Vundle.vim
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'ervandew/supertab'
+call vundle#end()
+
+if !exists('g:vscode')
     call vundle#begin()
-    Plugin 'scrooloose/nerdtree'
     Plugin 'taglist.vim'
+    Plugin 'scrooloose/nerdtree'
     Plugin 'scrooloose/syntastic'
     Plugin 'kien/ctrlp.vim'
     Plugin 'blerins/flattown'
     Plugin 'nathanaelkane/vim-indent-guides'
-    Plugin 'ervandew/supertab'
     "Plugin 'joonty/vdebug.git'
     Plugin 'vim-airline/vim-airline'
     "Plugin 'vim-airline/vim-airline-themes'
@@ -42,29 +45,30 @@ if !exists('g:vscode')
     let g:user_emmet_leader_key='<C-Z>'
     let mapleader=','
     let g:pdv_template_dir = $HOME ."/.vim/bundle/pdv/templates_snip"
+
     syntax enable
     colorscheme flattown
-
-    "Configure indents
-    autocmd Filetype javascript,html,css,smarty,yml,yaml setlocal ts=2 sts=2 sw=2 expandtab
-    autocmd Filetype php setlocal ts=4 sts=4 sw=4 expandtab omnifunc=phpcomplete_extended#CompletePHP
-    autocmd Filetype c,c++,java setlocal ts=4 sts=4 sw=4 expandtab
-
-    "Autocomplete options
-    autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
-    autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
-    autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
-    autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
-    autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
-
-    "Indent lines settings
-    let g:indent_guides_auto_colors=0
-    let g:indent_guides_guide_size=1
-    let g:indent_guides_enable_on_vim_startup=1
-    let g:indent_guides_exclude_filetypes = ['help', 'nerdtree']
-    hi IndentGuidesEven ctermbg=238
-    hi IndentGuidesOdd ctermbg=236
 endif
+
+"Configure indents
+autocmd Filetype javascript,html,css,smarty,yml,yaml setlocal ts=2 sts=2 sw=2 expandtab
+autocmd Filetype php setlocal ts=4 sts=4 sw=4 expandtab omnifunc=phpcomplete_extended#CompletePHP
+autocmd Filetype c,c++,java setlocal ts=4 sts=4 sw=4 expandtab
+
+"Autocomplete options
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+
+"Indent lines settings
+let g:indent_guides_auto_colors=0
+let g:indent_guides_guide_size=1
+let g:indent_guides_enable_on_vim_startup=1
+let g:indent_guides_exclude_filetypes = ['help', 'nerdtree']
+hi IndentGuidesEven ctermbg=238
+hi IndentGuidesOdd ctermbg=236
 
 "Custom mappings
 map <C-n> :NERDTreeToggle<CR>
