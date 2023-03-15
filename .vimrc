@@ -48,12 +48,20 @@ if !exists('g:vscode')
 
     syntax enable
     colorscheme flattown
-endif
 
-"Configure indents
-autocmd Filetype javascript,html,css,smarty,yml,yaml setlocal ts=2 sts=2 sw=2 expandtab
-autocmd Filetype php setlocal ts=4 sts=4 sw=4 expandtab omnifunc=phpcomplete_extended#CompletePHP
-autocmd Filetype c,c++,java setlocal ts=4 sts=4 sw=4 expandtab
+    "Configure indents
+    autocmd Filetype javascript,html,css,smarty,yml,yaml setlocal ts=2 sts=2 sw=2 expandtab
+    autocmd Filetype php setlocal ts=4 sts=4 sw=4 expandtab omnifunc=phpcomplete_extended#CompletePHP
+    autocmd Filetype c,c++,java setlocal ts=4 sts=4 sw=4 expandtab
+
+    "Indent lines settings
+    let g:indent_guides_auto_colors=0
+    let g:indent_guides_guide_size=1
+    let g:indent_guides_enable_on_vim_startup=1
+    let g:indent_guides_exclude_filetypes = ['help', 'nerdtree']
+    hi IndentGuidesEven ctermbg=238
+    hi IndentGuidesOdd ctermbg=236
+endif
 
 "Autocomplete options
 autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
@@ -61,14 +69,6 @@ autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
 autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
 autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
 autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
-
-"Indent lines settings
-let g:indent_guides_auto_colors=0
-let g:indent_guides_guide_size=1
-let g:indent_guides_enable_on_vim_startup=1
-let g:indent_guides_exclude_filetypes = ['help', 'nerdtree']
-hi IndentGuidesEven ctermbg=238
-hi IndentGuidesOdd ctermbg=236
 
 "Custom mappings
 map <C-n> :NERDTreeToggle<CR>
