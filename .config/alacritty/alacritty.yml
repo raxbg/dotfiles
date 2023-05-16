@@ -1,0 +1,11 @@
+selection:
+  save_to_clipboard: true
+font:
+  normal:
+    family: Hack
+  bold:
+    family: Hack
+  italic:
+    family: Hack
+mouse_bindings:
+  - { mouse: Left,  mods: Control, command: { program: "xdg-open", args: [] } }
