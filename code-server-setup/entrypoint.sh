@@ -33,3 +33,7 @@ if ! which "cargo" >/dev/null 2>&1; then
 
     curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path
 fi
+
+if ! which "gcc" >/dev/null 2>&1; then
+  sudo apt-get install gcc -y
+fi
