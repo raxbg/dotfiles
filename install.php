@@ -110,6 +110,26 @@ foreach ($entries as $entry) {
     create_link($entry, ucfirst(strtolower(substr($entry, 1))));
 }
 
+//Install kickstart
+echo __g("Cloning Neovim Kickstart...\n");
+passthru("git clone git@github.com:raxbg/kickstart.nvim.git ~/.config/nvim", $ret_val);
+if ($ret_val == 0) {
+    echo __g("Kickstart installed succcessfully\n");
+} else {
+    echo __r("Failed to install Kickstart! Aborting script...\n");
+    exit;
+}
+
+//Install Tmux Plugin Manager
+echo __g("Cloning Tmux Plugin Manager...\n");
+passthru("git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm", $ret_val);
+if ($ret_val == 0) {
+    echo __g("TPM installed succcessfully\n");
+} else {
+    echo __r("Failed to install TPM! Aborting script...\n");
+    exit;
+}
+
 //Install Vundle
 echo __g("Cloning Vundle...\n");
 passthru("git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim", $ret_val);
