@@ -62,6 +62,14 @@ plugins=(git colored-man-pages zsh-syntax-highlighting)
 export PATH=$PATH:$HOME/unix_scripts:$HOME/android/platform-tools:$HOME/.local/bin
 export SITEPACKPATH=$(python -c "import os; print(os.path.dirname(os.__file__))")/site-packages
 
+if [[ -d $HOME/repos/bitbucket/nos-bottles ]]; then
+	export TMUX_NEW_DIR=$HOME/repos/bitbucket/nos-bottles
+elif [[ -d $HOME/nos-bottles ]]; then
+	export TMUX_NEW_DIR=$HOME/nos-bottles
+else
+	export TMUX_NEW_DIR=$HOME
+fi
+
 source $ZSH/oh-my-zsh.sh
 ##source /home/$USER/.logins/aliases.sh
 
@@ -91,3 +99,4 @@ source $ZSH/oh-my-zsh.sh
 #/ alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ls="ls -Glah --color=auto"
 alias gonvim="~/gonvim/gonvim.sh"
+alias vim="nvim"
