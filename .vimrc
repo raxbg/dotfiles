@@ -15,8 +15,6 @@ Plugin 'joonty/vdebug.git'
 call vundle#end()
 
 filetype plugin indent on
-"source /usr/local/lib/python2.7/site-packages/powerline/bindings/vim/plugin/powerline.vim
-source /Users/ivailo/Library/Python/2.7/lib/python/site-packages/powerline/bindings/vim/plugin/powerline.vim
 
 if has('gui_running')
     set guifont=Meslo\ LG\ S\ DZ\ Regular\ for\ Powerline
