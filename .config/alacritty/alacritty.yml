@@ -2,10 +2,10 @@ selection:
   save_to_clipboard: true
 font:
   normal:
-    family: Hack
+    family: Hack Nerd Font
   bold:
-    family: Hack
+    family: Hack Nerd Font
   italic:
-    family: Hack
+    family: Hack Nerd Font
 mouse_bindings:
   - { mouse: Left,  mods: Control, command: { program: "xdg-open", args: [] } }

@@ -100,3 +100,6 @@ source $ZSH/oh-my-zsh.sh
 alias ls="ls -Glah --color=auto"
 alias gonvim="~/gonvim/gonvim.sh"
 alias vim="nvim"
+
+# Turso
+export PATH="$HOME/.turso:$PATH"
