@@ -2,9 +2,10 @@
 export ZSH=$HOME/.oh-my-zsh
 export EDITOR=vim
 export VISUAL=vim
-export HOMEBREW_MAKE_JOBS=8
-export ZSH_DISABLE_COMPFIX="true"
-export LC_CTYPE="en_US.UTF-8"
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export UID=$UID
+export GID=$GID
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
@@ -54,15 +55,30 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git colored-man-pages macos zsh-syntax-highlighting)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    export ZSH_DISABLE_COMPFIX="true"
+    export LC_CTYPE="en_US.UTF-8"
+    plugins=(git colored-man-pages macos zsh-syntax-highlighting)
+    export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/local_bin:/Users/$USER/bin:/Users/$USER/android-ndk:/Users/$USER/Library/Python/2.7/bin:/usr/local/go/bin"
+else
+    plugins=(git colored-man-pages zsh-syntax-highlighting)
+    export PATH=$PATH:$HOME/unix_scripts:$HOME/android/platform-tools:$HOME/.local/bin
+fi
 
 # User configuration
 
-export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/local_bin:/Users/$USER/bin:/Users/$USER/android-ndk:/Users/$USER/Library/Python/2.7/bin:/usr/local/go/bin"
-# export MANPATH="/usr/local/man:$MANPATH"
+#export SITEPACKPATH=$(python -c "import os; print(os.path.dirname(os.__file__))")/site-packages
+
+if [[ -d $HOME/repos/bitbucket/nos-bottles ]]; then
+	export TMUX_NEW_DIR=$HOME/repos/bitbucket/nos-bottles
+elif [[ -d $HOME/nos-bottles ]]; then
+	export TMUX_NEW_DIR=$HOME/nos-bottles
+else
+	export TMUX_NEW_DIR=$HOME
+fi
 
 source $ZSH/oh-my-zsh.sh
-#source $HOME/.logins/aliases.sh
+##source /home/$USER/.logins/aliases.sh
 
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
@@ -88,14 +104,18 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 #/ alias ohmyzsh="mate ~/.oh-my-zsh"
-alias ls="ls -Glah"
-alias mvim="open -a MacVim"
-alias .mysql="mysql -u\$(php -r 'error_reporting(0); include \"config.php\"; echo DB_USERNAME;') -p\$(php -r 'error_reporting(0); include \"config.php\"; echo DB_PASSWORD;') \$(php -r 'error_reporting(0); include \"config.php\"; echo DB_DATABASE;')"
-alias .mysqldump="mysqldump -u\$(php -r 'error_reporting(0); include \"config.php\"; echo DB_USERNAME;') -p\$(php -r 'error_reporting(0); include \"config.php\"; echo DB_PASSWORD;') \$(php -r 'error_reporting(0); include \"config.php\"; echo DB_DATABASE;')"
+alias ls="ls -Glah --color=auto"
+alias gonvim="~/gonvim/gonvim.sh"
+alias vim="nvim"
 
-#export NVM_DIR="$HOME/.nvm"
-#[ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
-#[ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # Turso
+    export PATH="$HOME/.turso:$PATH"
 
-# Generated for envman. Do not edit.
-[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+    [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+
+    # Generated for envman. Do not edit.
+    [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+fi
