@@ -3,10 +3,14 @@
 
 subcp=cp1251
 #ao=pulse
-vo=xv,directfb
-#vo=vdpau
-lavdopts=threads=4
+#vo=xv,directfb
+vo=vdpau
+#vo=vaapi
+#va=vaapi
+lavdopts=threads=8
 use-filename-title=yes
 af=scaletempo
 idx=yes
+ao=pulse
+#mixer-channel=Master
 #heartbeat-cmd="xscreensaver-command -deactivate >&- 2>&- &"
