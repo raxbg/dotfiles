@@ -1,0 +1,19 @@
+[font.bold]
+family = "Hack Nerd Font"
+
+[font.italic]
+family = "Hack Nerd Font"
+
+[font.normal]
+family = "Hack Nerd Font"
+
+[[mouse.bindings]]
+mods = "Control"
+mouse = "Left"
+
+[mouse.bindings.command]
+args = []
+program = "xdg-open"
+
+[selection]
+save_to_clipboard = true

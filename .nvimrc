@@ -1,3 +1,5 @@
+set nofixeol
+
 map <C-n> :Neotree toggle<CR>
 map <C-o> :Neotree reveal %<CR>
 map <C-h> :tabp<CR>
