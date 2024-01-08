@@ -55,12 +55,19 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git colored-man-pages zsh-syntax-highlighting)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    export ZSH_DISABLE_COMPFIX="true"
+    export LC_CTYPE="en_US.UTF-8"
+    plugins=(git colored-man-pages macos zsh-syntax-highlighting)
+    export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/local_bin:/Users/$USER/bin:/Users/$USER/android-ndk:/Users/$USER/Library/Python/2.7/bin:/usr/local/go/bin"
+else
+    plugins=(git colored-man-pages zsh-syntax-highlighting)
+    export PATH=$PATH:$HOME/unix_scripts:$HOME/android/platform-tools:$HOME/.local/bin
+fi
 
 # User configuration
 
-export PATH=$PATH:$HOME/unix_scripts:$HOME/android/platform-tools:$HOME/.local/bin
-export SITEPACKPATH=$(python -c "import os; print(os.path.dirname(os.__file__))")/site-packages
+#export SITEPACKPATH=$(python -c "import os; print(os.path.dirname(os.__file__))")/site-packages
 
 if [[ -d $HOME/repos/bitbucket/nos-bottles ]]; then
 	export TMUX_NEW_DIR=$HOME/repos/bitbucket/nos-bottles
@@ -101,5 +108,14 @@ alias ls="ls -Glah --color=auto"
 alias gonvim="~/gonvim/gonvim.sh"
 alias vim="nvim"
 
-# Turso
-export PATH="$HOME/.turso:$PATH"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # Turso
+    export PATH="$HOME/.turso:$PATH"
+
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+    [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+
+    # Generated for envman. Do not edit.
+    [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+fi
