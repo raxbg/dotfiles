@@ -1,5 +1,10 @@
 set nofixeol
 
+set expandtab       " Use spaces instead of tabs
+set tabstop=4       " Number of spaces tabs count for
+set shiftwidth=4    " Number of spaces to use for autoindent
+set softtabstop=4   " Number of spaces to insert for a tab
+
 map <C-n> :Neotree toggle<CR>
 map <C-o> :Neotree reveal %<CR>
 map <C-h> :tabp<CR>
