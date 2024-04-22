@@ -59,10 +59,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     export ZSH_DISABLE_COMPFIX="true"
     export LC_CTYPE="en_US.UTF-8"
     plugins=(git colored-man-pages macos zsh-syntax-highlighting)
-    export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/local_bin:/Users/$USER/bin:/Users/$USER/android-ndk:/Users/$USER/Library/Python/2.7/bin:/usr/local/go/bin"
+    export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/$USER/android-sdk/platform-tools:/Users/$USER/android-sdk/tools:/Users/$USER/local_bin:/Users/$USER/bin:/Users/$USER/android-ndk:/Users/$USER/Library/Python/2.7/bin:/usr/local/go/bin:$HOME/go/bin"
 else
     plugins=(git colored-man-pages zsh-syntax-highlighting)
-    export PATH=$PATH:$HOME/unix_scripts:$HOME/android/platform-tools:$HOME/.local/bin:/usr/local/go/bin
+    export PATH=$PATH:$HOME/unix_scripts:$HOME/android/platform-tools:$HOME/.local/bin:/usr/local/go/bin:$HOME/go/bin
 fi
 
 # User configuration
