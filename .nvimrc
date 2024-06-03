@@ -8,6 +8,7 @@ map <C-j> <C-F>
 map <C-k> <C-U>
 map _ ddp
 map + ddkP
+nnoremap Q q
 map q :q<CR>
 map W :w<CR>
 map <F4> mzgg=G`z
@@ -16,6 +17,3 @@ map <F4> mzgg=G`z
 "Split movement
 map <S-h> <C-w>H
 map <S-l> <C-w>L
-map <S-j> <C-w>J
-map <S-k> <C-w>K
-
