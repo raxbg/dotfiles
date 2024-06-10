@@ -15,7 +15,6 @@ map _ ddp
 map + ddkP
 nnoremap Q q
 map q :q<CR>
-map W :w<CR>
 map <F4> mzgg=G`z
 "map <S-t> :bo ter ++rows=15<CR>
 
