@@ -1,3 +1,4 @@
+# zmodload zsh/zprof # debug zsh startup time
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 export EDITOR=vim
@@ -111,11 +112,6 @@ alias vim="nvim"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # Turso
     export PATH="$HOME/.turso:$PATH"
-
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
-    [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
-
-    # Generated for envman. Do not edit.
-    [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+    eval "$(fnm env --use-on-cd --shell zsh)"
 fi
+# zprof # debug zsh startup time
