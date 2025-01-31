@@ -70,12 +70,11 @@ fi
 
 #export SITEPACKPATH=$(python -c "import os; print(os.path.dirname(os.__file__))")/site-packages
 
-if [[ -d $HOME/repos/bitbucket/nos-bottles ]]; then
-	export TMUX_NEW_DIR=$HOME/repos/bitbucket/nos-bottles
-elif [[ -d $HOME/nos-bottles ]]; then
-	export TMUX_NEW_DIR=$HOME/nos-bottles
+
+if [[ -f $HOME/.tmux_new_dir ]]; then
+    export TMUX_NEW_DIR=$(cat $HOME/.tmux_new_dir)
 else
-	export TMUX_NEW_DIR=$HOME
+    export TMUX_NEW_DIR=$HOME
 fi
 
 source $ZSH/oh-my-zsh.sh
@@ -109,7 +108,7 @@ alias ls="ls -Glah --color=auto"
 alias gonvim="~/gonvim/gonvim.sh"
 alias vim="nvim"
 
-if [[ -f ~/.prod-kubeconfig.yaml ]]; then
+if [[ -f $HOME/.prod-kubeconfig.yaml ]]; then
     alias kprod="kubectl --kubeconfig ~/.prod-kubeconfig.yaml"
 else
 	alias kprod="echo 'No prod kubeconfig found'"
