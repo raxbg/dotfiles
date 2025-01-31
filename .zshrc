@@ -109,6 +109,12 @@ alias ls="ls -Glah --color=auto"
 alias gonvim="~/gonvim/gonvim.sh"
 alias vim="nvim"
 
+if [[ -f ~/.prod-kubeconfig.yaml ]]; then
+    alias kprod="kubectl --kubeconfig ~/.prod-kubeconfig.yaml"
+else
+	alias kprod="echo 'No prod kubeconfig found'"
+fi
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # Turso
     export PATH="$HOME/.turso:$PATH"
