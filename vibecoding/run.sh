@@ -91,6 +91,12 @@ build_docker_command() {
 
 # Start the container
 start_container() {
+  # Check if image exists, build if needed
+  if ! docker image inspect opencode:latest >/dev/null 2>&1; then
+    echo "🐳 Building OpenCode image..."
+    docker build -t opencode:latest .
+  fi
+
   local docker_cmd
   docker_cmd=$(build_docker_command)
   
