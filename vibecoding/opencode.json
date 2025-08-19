@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "groq/moonshotai/kimi-k2-instruct",
+  "theme": "system",
+  "permission": {
+    "bash": {
+      "*git*commit*": "deny",
+      "*git*push*": "deny",
+      "*git*branch*": "deny",
+      "*git*reset*": "deny",
+      "*git*add*": "deny",
+      "*": "allow"
+    }
+  },
+}

@@ -108,6 +108,8 @@ alias ls="ls -Glah --color=auto"
 alias gonvim="~/gonvim/gonvim.sh"
 alias vim="nvim"
 
+alias ai="~/.dotfiles/vibecoding/run.sh"
+
 if [[ -f $HOME/.prod-kubeconfig.yaml ]]; then
     alias kprod="kubectl --kubeconfig ~/.prod-kubeconfig.yaml"
 else
