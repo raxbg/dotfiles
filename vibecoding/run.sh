@@ -3,6 +3,7 @@
 # Parse arguments
 INPLACE_MODE=true
 TMUX_MODE=false
+BUILD_ONLY=false
 for arg in "$@"; do
   case $arg in
     sandbox)
@@ -10,6 +11,9 @@ for arg in "$@"; do
       ;;
     tmux)
       TMUX_MODE=true
+      ;;
+    build)
+      BUILD_ONLY=true
       ;;
   esac
 done
@@ -69,6 +73,13 @@ PROJECT_MOUNT="$PROJECT_MOUNT/$WORKTREE_NAME"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONTAINER_NAME="opencode$WORKTREE_NAME"
 
+# Build the docker image
+build_image() {
+  echo "🐳 Building OpenCode image..."
+  docker build --no-cache -t opencode:latest .
+  echo "✅ OpenCode image built successfully"
+}
+
 # Build the docker command array
 build_docker_command() {
   # Check if container already exists
@@ -93,8 +104,7 @@ build_docker_command() {
 start_container() {
   # Check if image exists, build if needed
   if ! docker image inspect opencode:latest >/dev/null 2>&1; then
-    echo "🐳 Building OpenCode image..."
-    docker build -t opencode:latest .
+    build_image
   fi
 
   local docker_cmd
@@ -112,6 +122,12 @@ start_container() {
 }
 
 set -ex
+
+# Handle build-only mode
+if [ "$BUILD_ONLY" = true ]; then
+  build_image
+  exit 0
+fi
 
 # Handle tmux mode
 if [ "$TMUX_MODE" = true ]; then
