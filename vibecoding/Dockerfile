@@ -1,6 +1,6 @@
 FROM node:24-slim
 
-RUN apt-get update && apt-get install -y git curl bash fzf ripgrep unzip wget ca-certificates
+RUN apt-get update && apt-get install -y git curl bash fzf ripgrep unzip wget ca-certificates gcc
 
 # Install latest Neovim from official Linux tarball
 RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz && \
