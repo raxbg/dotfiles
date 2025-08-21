@@ -76,7 +76,7 @@ CONTAINER_NAME="opencode$WORKTREE_NAME"
 # Build the docker image
 build_image() {
   echo "🐳 Building OpenCode image..."
-  docker build --no-cache -t opencode:latest .
+  docker build --no-cache -t opencode:latest $SCRIPT_DIR -f "$SCRIPT_DIR/Dockerfile"
   echo "✅ OpenCode image built successfully"
 }
 
