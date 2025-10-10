@@ -88,7 +88,7 @@ build_docker_command() {
     return 0
   fi
   
-  local docker_cmd=(docker run --rm --name "$CONTAINER_NAME")
+  local docker_cmd=(docker run --rm --memory=3g --memory-swap=3g --name "$CONTAINER_NAME")
   docker_cmd+=(-it)
   docker_cmd+=(-v opencode-share:/home/node/.local/share:rw)
   docker_cmd+=(-v "$PROJECT_MOUNT")
