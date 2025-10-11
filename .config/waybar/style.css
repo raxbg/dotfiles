@@ -17,7 +17,7 @@
 #keyboard-state,
 #clock {
   /*background-color: rgba(29,31,46, 0.95);*/
-  background-color: rgba(15,27,53,0.9);
+  background-color: rgba(36,46,66,0.9);
   padding: 4px 6px;
   margin-top: 6px;
   margin-left: 6px;
@@ -29,7 +29,7 @@
 #custom-power,
 #custom-lock,
 #cpu {
-  background-color: rgba(15,27,53,0.9);
+  background-color: rgba(36,46,66,0.9);
   margin-top: 6px;
   margin-right: 6px;
   /*margin-bottom: 4px;*/
@@ -39,7 +39,7 @@
 }
 
 #network{
-  background-color: rgba(15,27,53,0.9);
+  background-color: rgba(36,46,66,0.9);
   margin-top: 6px;
   margin-left: 6px;
   /*margin-bottom: 4px;*/
@@ -55,7 +55,7 @@
 #backlight,
 #custom-temperature,
 #memory {
-  background-color: rgba(15,27,53,0.9);
+  background-color: rgba(36,46,66,0.9);
   margin-top: 6px;
   /*margin-bottom: 4px;*/
   padding: 4px 2px;
