@@ -1,0 +1,8 @@
+configuration {
+    combi-modi: "drun,run,calc";
+    show-icons: true;
+    icon-theme: "Papirus";
+    auto-select: true;
+}
+
+@theme "rounded-nord-dark"
