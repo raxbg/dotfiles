@@ -1,8 +1,14 @@
 configuration {
-    combi-modi: "drun,run,calc";
+    combi-modi: "drun,run";
+    modi: "combi,calc";
     show-icons: true;
     icon-theme: "Papirus";
     auto-select: true;
+    combi-hide-mode-prefix: true;
+    kb-mode-next: "Alt+l";
+    kb-mode-previous: "Alt+h";
+    kb-row-up: "K";
+    kb-row-down: "J";
 }
 
 @theme "rounded-nord-dark"
