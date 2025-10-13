@@ -3,7 +3,6 @@ configuration {
     modi: "combi,calc";
     show-icons: true;
     icon-theme: "Papirus";
-    auto-select: true;
     combi-hide-mode-prefix: true;
     kb-mode-next: "Alt+l";
     kb-mode-previous: "Alt+h";
