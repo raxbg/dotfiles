@@ -92,7 +92,7 @@ build_docker_command() {
   docker_cmd+=(-it)
   docker_cmd+=(-v opencode-share:/home/node/.local/share:rw)
   docker_cmd+=(-v "$PROJECT_MOUNT")
-  docker_cmd+=(-v "$SCRIPT_DIR/opencode.json:/home/node/.config/opencode/opencode.json")
+  docker_cmd+=(-v "$SCRIPT_DIR/opencode:/home/node/.config/opencode")
   docker_cmd+=(-v "$HOME/.config/nvim:/home/node/.config/nvim")
   if [ -f "$HOME/.nvimrc" ]; then
     docker_cmd+=(-v "$HOME/.nvimrc:/home/node/.nvimrc")
