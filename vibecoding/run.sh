@@ -91,14 +91,20 @@ build_docker_command() {
   local docker_cmd=(docker run --rm --memory=3g --memory-swap=3g --name "$CONTAINER_NAME")
   docker_cmd+=(-it)
   docker_cmd+=(-v opencode-share:/home/node/.local/share:rw)
+  docker_cmd+=(-v opencode-go-cache:/go-cache:rw)
+  docker_cmd+=(-v opencode-go-path:/go-path:rw)
   docker_cmd+=(-v "$PROJECT_MOUNT")
   docker_cmd+=(-v "$SCRIPT_DIR/opencode:/home/node/.config/opencode")
+  docker_cmd+=(-v "$SCRIPT_DIR/entrypoint.sh:/etc/entrypoint.sh")
   docker_cmd+=(-v "$HOME/.config/nvim:/home/node/.config/nvim")
   if [ -f "$HOME/.nvimrc" ]; then
     docker_cmd+=(-v "$HOME/.nvimrc:/home/node/.nvimrc")
   fi
   docker_cmd+=(-w "/home/node/project/$WORKTREE_NAME")
   docker_cmd+=(-u 1000:1000)
+  docker_cmd+=(-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin)
+  docker_cmd+=(-e GOCACHE=/go-cache)
+  docker_cmd+=(-e GOPATH=/go-path)
   docker_cmd+=(opencode:latest)
   
   echo "${docker_cmd[@]}"
