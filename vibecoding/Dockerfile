@@ -1,7 +1,7 @@
 FROM node:24-slim
 
-RUN apt-get update && apt-get install -y git curl bash fzf ripgrep unzip wget ca-certificates gcc \
-python3 python3-pip python3-venv
+RUN apt-get update && apt-get install -y --no-install-recommends git curl bash fzf ripgrep unzip wget ca-certificates gcc \
+python3 python3-pip python3-venv wl-clipboard
 
 RUN curl https://go.dev/dl/go1.25.6.linux-amd64.tar.gz -L -o /tmp/go.tar.gz
 RUN tar -C /usr/local -xzf /tmp/go.tar.gz

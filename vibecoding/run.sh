@@ -101,10 +101,21 @@ build_docker_command() {
     docker_cmd+=(-v "$HOME/.nvimrc:/home/node/.nvimrc")
   fi
   docker_cmd+=(-w "/home/node/project/$WORKTREE_NAME")
-  docker_cmd+=(-u 1000:1000)
+  docker_cmd+=(-u $(id -u):$(id -g))
   docker_cmd+=(-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin)
   docker_cmd+=(-e GOCACHE=/go-cache)
   docker_cmd+=(-e GOPATH=/go-path)
+
+  # Clipboard support
+  if [[ "$(uname -s)" == "Linux" ]]; then
+    docker_cmd+=(-v $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/run/user/$(id -u)/$WAYLAND_DISPLAY)
+    docker_cmd+=(-e XDG_RUNTIME_DIR=/run/user/$(id -u))
+    docker_cmd+=(-e WAYLAND_DISPLAY=$WAYLAND_DISPLAY)
+  elif [[ "$(uname -s)" == "Darwin" ]]; then
+    # macOS - not supported for now
+    :
+  fi
+
   docker_cmd+=(opencode:latest)
   
   echo "${docker_cmd[@]}"
