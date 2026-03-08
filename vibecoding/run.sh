@@ -208,5 +208,59 @@ if [ "$TMUX_MODE" = true ]; then
   exit 0
 fi
 
+# Check if proxy port is open
+is_proxy_port_open() {
+  timeout 1 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/31053' 2>/dev/null
+}
+
+# Check if MCP is already running on port 9090
+is_mcp_running() {
+  timeout 1 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/9090' 2>/dev/null
+}
+
+# Start MCP for Chrome DevTools
+start_mcp() {
+  echo "🚀 Starting Chrome DevTools MCP..."
+
+  if is_proxy_port_open; then
+    echo "✅ Proxy port 31053 is open, starting with proxy..."
+    npx -y supergateway \
+      --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --isolated --proxy-server='socks5h://127.0.0.1:31053'" \
+      --outputTransport streamableHttp \
+      --port 9090 &
+  else
+    echo "⚠️  Proxy port 31053 is not open, starting without proxy..."
+    npx -y supergateway \
+      --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --isolated" \
+      --outputTransport streamableHttp \
+      --port 9090 &
+  fi
+
+  MCP_PID=$!
+  echo "📝 MCP started with PID: $MCP_PID"
+
+  # Give MCP a moment to start
+  sleep 2
+}
+
+# Cleanup MCP process on exit
+cleanup_mcp() {
+  if [ -n "$MCP_PID" ] && kill -0 "$MCP_PID" 2>/dev/null; then
+    echo "🧹 Cleaning up MCP process (PID: $MCP_PID)..."
+    kill "$MCP_PID" 2>/dev/null
+    wait "$MCP_PID" 2>/dev/null
+  fi
+}
+
+# Set up cleanup trap
+trap cleanup_mcp EXIT INT TERM
+
+# Start MCP before docker container (only if not already running)
+if ! is_mcp_running; then
+  start_mcp
+else
+  echo "🔍 MCP server already running on port 9090, skipping startup..."
+fi
+
 # Start container normally
 start_container
