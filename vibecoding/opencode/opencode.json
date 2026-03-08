@@ -1,7 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "openrouter/mistralai/devstral-2512",
-  "theme": "system",
+  "model": "openrouter/moonshotai/kimi-k2.5",
   "provider": {
     "ollama": {
         "npm": "@ai-sdk/openai-compatible",
@@ -31,5 +30,5 @@
       "*git*add*": "deny",
       "*": "allow"
     }
-  },
+  }
 }
