@@ -29,6 +29,7 @@ RUN mkdir /go-cache && mkdir /go-path && chmod 777 /go-cache /go-path
 USER node
 
 ENV EDITOR=nvim
+ENV OPENCODE_EXPERIMENTAL_LSP_TY=true
 
 RUN mkdir /home/node/project
 RUN mkdir /home/node/.opencode

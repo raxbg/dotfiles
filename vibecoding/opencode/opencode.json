@@ -21,6 +21,16 @@
         }
     }
   },
+  "mcp": {
+    "chrome-devtools": {
+      "type": "remote",
+      "url": "http://{env:HOST_ADDR}:9090/mcp",
+      "enabled": true
+    }
+  },
+  "tools": {
+    "chrome-devtools*": false
+  },
   "permission": {
     "bash": {
       "*git*commit*": "deny",

@@ -90,6 +90,7 @@ build_docker_command() {
   
   local docker_cmd=(docker run --rm --memory=3g --memory-swap=3g --name "$CONTAINER_NAME")
   docker_cmd+=(-it)
+  #docker_cmd+=(-p 4096:4096)
   docker_cmd+=(-v opencode-share:/home/node/.local/share:rw)
   docker_cmd+=(-v opencode-go-cache:/go-cache:rw)
   docker_cmd+=(-v opencode-go-path:/go-path:rw)
@@ -225,15 +226,15 @@ start_mcp() {
   if is_proxy_port_open; then
     echo "✅ Proxy port 31053 is open, starting with proxy..."
     npx -y supergateway \
-      --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --isolated --proxy-server='socks5h://127.0.0.1:31053'" \
-      --outputTransport streamableHttp \
-      --port 9090 &
+      --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --no-performance-crux --proxy-server=socks5://127.0.0.1:31053" \
+      --outputTransport streamableHttp --stateful \
+      --sessionTimeout 86400000 --port 9090 > /dev/null 2>&1 &
   else
     echo "⚠️  Proxy port 31053 is not open, starting without proxy..."
     npx -y supergateway \
-      --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --isolated" \
-      --outputTransport streamableHttp \
-      --port 9090 &
+      --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --no-performance-crux" \
+      --outputTransport streamableHttp --stateful \
+      --sessionTimeout 86400000 --port 9090 > /dev/null 2>&1 &
   fi
 
   MCP_PID=$!
