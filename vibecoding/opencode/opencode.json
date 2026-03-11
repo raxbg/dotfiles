@@ -24,7 +24,7 @@
   "mcp": {
     "chrome-devtools": {
       "type": "remote",
-      "url": "http://{env:HOST_ADDR}:9090/mcp",
+      "url": "http://{env:HOST_ADDR}:31811/mcp",
       "enabled": true
     }
   },
@@ -40,5 +40,9 @@
       "*git*add*": "deny",
       "*": "allow"
     }
+  },
+  "server": {
+    "port": 4096,
+    "hostname": "0.0.0.0"
   }
 }

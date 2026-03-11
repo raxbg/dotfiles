@@ -17,4 +17,6 @@ export HOST_ADDR="172.17.0.1"
 #
 #activate_venv
 
+#/usr/local/bin/opencode web &
+#/usr/local/bin/opencode attach http://localhost:4096/
 /usr/local/bin/opencode

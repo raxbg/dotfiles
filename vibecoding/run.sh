@@ -209,33 +209,20 @@ if [ "$TMUX_MODE" = true ]; then
   exit 0
 fi
 
-# Check if proxy port is open
-is_proxy_port_open() {
-  timeout 1 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/31053' 2>/dev/null
-}
-
 # Check if MCP is already running on port 9090
 is_mcp_running() {
-  timeout 1 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/9090' 2>/dev/null
+  timeout 1 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/31811' 2>/dev/null
 }
 
 # Start MCP for Chrome DevTools
 start_mcp() {
   echo "🚀 Starting Chrome DevTools MCP..."
 
-  if is_proxy_port_open; then
-    echo "✅ Proxy port 31053 is open, starting with proxy..."
-    npx -y supergateway \
-      --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --no-performance-crux --proxy-server=socks5://127.0.0.1:31053" \
-      --outputTransport streamableHttp --stateful \
-      --sessionTimeout 86400000 --port 9090 > /dev/null 2>&1 &
-  else
-    echo "⚠️  Proxy port 31053 is not open, starting without proxy..."
-    npx -y supergateway \
-      --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --no-performance-crux" \
-      --outputTransport streamableHttp --stateful \
-      --sessionTimeout 86400000 --port 9090 > /dev/null 2>&1 &
-  fi
+  echo "⚠️ Chrome Devtools MCP not detected, starting a fresh one..."
+  npx -y supergateway \
+    --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --no-performance-crux" \
+    --outputTransport streamableHttp --stateful \
+    --sessionTimeout 86400000 --port 31811 > /dev/null 2>&1 &
 
   MCP_PID=$!
   echo "📝 MCP started with PID: $MCP_PID"
@@ -260,7 +247,7 @@ trap cleanup_mcp EXIT INT TERM
 if ! is_mcp_running; then
   start_mcp
 else
-  echo "🔍 MCP server already running on port 9090, skipping startup..."
+  echo "🔍 MCP server already running on port 31811, skipping startup..."
 fi
 
 # Start container normally
