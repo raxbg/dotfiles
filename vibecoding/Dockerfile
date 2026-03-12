@@ -4,8 +4,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends git curl bash f
 python3 python3-pip python3-venv wl-clipboard \
 php-cli
 
-RUN curl https://go.dev/dl/go1.25.6.linux-amd64.tar.gz -L -o /tmp/go.tar.gz
-RUN tar -C /usr/local -xzf /tmp/go.tar.gz
+RUN ARCH=$(uname -m) && \
+    case $ARCH in \
+        x86_64) GO_ARCH="amd64" ;; \
+        aarch64) GO_ARCH="arm64" ;; \
+        *) echo "Unsupported architecture: $ARCH" && exit 1 ;; \
+    esac && \
+    curl https://go.dev/dl/go1.25.6.linux-${GO_ARCH}.tar.gz -L -o /tmp/go.tar.gz && \
+    tar -C /usr/local -xzf /tmp/go.tar.gz
 
 # Install latest Neovim from official Linux tarball with architecture detection
 RUN ARCH=$(uname -m) && \
