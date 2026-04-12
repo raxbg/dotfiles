@@ -108,6 +108,7 @@ build_docker_command() {
 
   # Clipboard support
   if [[ "$(uname -s)" == "Linux" ]]; then
+    docker_cmd+=(--add-host host.docker.internal:host-gateway)
     docker_cmd+=(-u $(id -u):$(id -g))
     docker_cmd+=(-v $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/run/user/$(id -u)/$WAYLAND_DISPLAY)
     docker_cmd+=(-e XDG_RUNTIME_DIR=/run/user/$(id -u))

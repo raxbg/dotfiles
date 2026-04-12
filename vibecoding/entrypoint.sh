@@ -1,22 +1,62 @@
 #!/bin/sh
 
-# TODO: Adjust if running on mac to use the host.docker.internal address instead of the default docker gateway
-export HOST_ADDR="172.17.0.1"
+set -eu
 
-#export PATH=$PATH:/usr/local/go/bin
+HOST_ADDR="${HOST_ADDR:-host.docker.internal}"
+PROJECT_DIR="${PWD:-/home/node/project}"
+TUNNEL_PIDS=""
 
-# Find and activate the closest .venv from current directory (searching downward)
-#activate_venv() {
-#    venv_path=$(find . -type d -name ".venv" 2>/dev/null | \
-#        awk '{print length, $0}' | sort -n | cut -d' ' -f2- | head -1)
-#    
-#    if [ -n "$venv_path" ] && [ -f "$venv_path/bin/activate" ]; then
-#        . "$venv_path/bin/activate"
-#    fi
-#}
-#
-#activate_venv
+start_localhost_tunnels() {
+    if ! command -v socat >/dev/null 2>&1; then
+        echo "⚠️ socat not found, skipping localhost tunnel setup"
+        return 0
+    fi
 
-#/usr/local/bin/opencode web &
-#/usr/local/bin/opencode attach http://localhost:4096/
+    config_files=$(find "$PROJECT_DIR" -maxdepth 2 \
+        \( -name .git -o -name node_modules \) -prune -o \
+        -type f \( -name "opencode.json" -o -name ".opencode.json" -o -name "*opencode*.json" \) \
+        -print)
+
+    if [ -z "$config_files" ]; then
+        return 0
+    fi
+
+    ports=$(printf '%s\n' "$config_files" | \
+        xargs -r grep -hEo '(localhost|127\.0\.0\.1):[0-9]{1,5}' 2>/dev/null | \
+        sed -E 's/.*:([0-9]{1,5})/\1/' | \
+        awk '$1 >= 1 && $1 <= 65535' | \
+        sort -u)
+
+    if [ -z "$ports" ]; then
+        return 0
+    fi
+
+    echo "🔌 Starting localhost tunnels via $HOST_ADDR..."
+    for port in $ports; do
+        socat "TCP-LISTEN:${port},bind=127.0.0.1,reuseaddr,fork" "TCP:${HOST_ADDR}:${port}" >/tmp/opencode-tunnel-"${port}".log 2>&1 &
+        pid=$!
+
+        sleep 0.1
+        if kill -0 "$pid" 2>/dev/null; then
+            TUNNEL_PIDS="$TUNNEL_PIDS $pid"
+            echo "  - 127.0.0.1:${port} -> ${HOST_ADDR}:${port}"
+        else
+            echo "  - failed to create tunnel for port ${port}"
+        fi
+    done
+}
+
+cleanup_tunnels() {
+    for pid in $TUNNEL_PIDS; do
+        if kill -0 "$pid" 2>/dev/null; then
+            kill "$pid" 2>/dev/null || true
+            wait "$pid" 2>/dev/null || true
+        fi
+    done
+}
+
+trap cleanup_tunnels EXIT INT TERM
+
+start_localhost_tunnels
+
 /usr/local/bin/opencode

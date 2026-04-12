@@ -1,6 +1,6 @@
 FROM node:24-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends git curl bash fzf ripgrep unzip wget ca-certificates gcc \
+RUN apt-get update && apt-get install -y --no-install-recommends git curl bash fzf ripgrep unzip wget ca-certificates gcc socat \
 python3 python3-pip python3-venv wl-clipboard \
 php-cli
 
