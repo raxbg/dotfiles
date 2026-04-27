@@ -4,7 +4,15 @@
 INPLACE_MODE=true
 TMUX_MODE=false
 BUILD_ONLY=false
+SHARE_VOLUME_NAME="opencode-share"
+EXPECT_SHARE_VOLUME_NAME=false
 for arg in "$@"; do
+  if [ "$EXPECT_SHARE_VOLUME_NAME" = true ]; then
+    SHARE_VOLUME_NAME="$arg"
+    EXPECT_SHARE_VOLUME_NAME=false
+    continue
+  fi
+
   case $arg in
     sandbox)
       INPLACE_MODE=false
@@ -15,8 +23,16 @@ for arg in "$@"; do
     build)
       BUILD_ONLY=true
       ;;
+    -v)
+      EXPECT_SHARE_VOLUME_NAME=true
+      ;;
   esac
 done
+
+if [ "$EXPECT_SHARE_VOLUME_NAME" = true ]; then
+  echo "❌ Missing volume name after -v"
+  exit 1
+fi
 
 echo "🚀 Starting OpenCode..."
 
@@ -91,7 +107,7 @@ build_docker_command() {
   local docker_cmd=(docker run --rm --memory=3g --memory-swap=3g --name "$CONTAINER_NAME")
   docker_cmd+=(-it)
   #docker_cmd+=(-p 4096:4096)
-  docker_cmd+=(-v opencode-share:/home/node/.local/share:rw)
+  docker_cmd+=(-v "$SHARE_VOLUME_NAME:/home/node/.local/share:rw")
   docker_cmd+=(-v opencode-go-cache:/go-cache:rw)
   docker_cmd+=(-v opencode-go-path:/go-path:rw)
   docker_cmd+=(-v "$PROJECT_MOUNT")
