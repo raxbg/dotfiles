@@ -6,15 +6,17 @@
   <title>OpenCode Servers</title>
   <style>
     :root {
-      --bg: #f4f5f7;
-      --panel: #ffffff;
-      --text: #1b1e28;
-      --muted: #626779;
-      --line: #dce1ea;
-      --accent: #0d6d5c;
-      --accent-2: #0a5a4c;
-      --warn: #b02a37;
-      --shadow: 0 12px 28px rgba(20, 25, 40, 0.08);
+      --bg: #0b111c;
+      --bg-2: #0f1729;
+      --panel: rgba(20, 29, 46, 0.75);
+      --panel-solid: #151f34;
+      --text: #e9f1ff;
+      --muted: #9fb1cf;
+      --line: rgba(122, 147, 189, 0.28);
+      --accent: #24b892;
+      --accent-2: #1fa07f;
+      --warn: #de5b6e;
+      --link: #8bc1ff;
     }
 
     * { box-sizing: border-box; }
@@ -22,9 +24,33 @@
     body {
       margin: 0;
       min-height: 100vh;
-      background: radial-gradient(circle at top right, #dcebe7 0%, var(--bg) 42%);
+      background:
+        radial-gradient(circle at 14% 18%, rgba(36, 184, 146, 0.18), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(124, 163, 255, 0.17), transparent 30%),
+        radial-gradient(circle at 78% 78%, rgba(36, 184, 146, 0.1), transparent 26%),
+        linear-gradient(160deg, var(--bg) 0%, var(--bg-2) 100%);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
       color: var(--text);
       font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color-scheme: dark;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(146, 171, 218, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(146, 171, 218, 0.06) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.9), transparent 88%);
+      z-index: 0;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
     }
 
     main {
@@ -35,6 +61,7 @@
 
     .hero {
       margin-bottom: 1.25rem;
+      padding: 0.4rem 0;
     }
 
     h1 {
@@ -53,7 +80,6 @@
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 14px;
-      box-shadow: var(--shadow);
       padding: 1rem;
       margin-bottom: 1rem;
     }
@@ -72,11 +98,17 @@
     input[type="text"] {
       width: 100%;
       font: inherit;
-      border: 1px solid #bfc8d8;
+      border: 1px solid var(--line);
       border-radius: 10px;
       padding: 0.68rem 0.75rem;
       color: var(--text);
-      background: #fff;
+      background: rgba(7, 12, 22, 0.9);
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: rgba(36, 184, 146, 0.7);
+      box-shadow: 0 0 0 2px rgba(36, 184, 146, 0.22);
     }
 
     .dir-suggestions {
@@ -88,10 +120,9 @@
       display: none;
       max-height: 260px;
       overflow-y: auto;
-      background: #fff;
-      border: 1px solid #c5cedd;
+      background: var(--panel-solid);
+      border: 1px solid var(--line);
       border-radius: 10px;
-      box-shadow: 0 10px 22px rgba(20, 25, 40, 0.12);
       padding: 0.28rem;
     }
 
@@ -116,7 +147,7 @@
     }
 
     .dir-suggestion-item:hover {
-      background: #edf1f8;
+      background: rgba(139, 193, 255, 0.14);
     }
 
     button {
@@ -135,11 +166,11 @@
       white-space: nowrap;
       padding: 0.4rem 0.6rem;
       border-radius: 8px;
-      background: #b02a37;
+      background: #cf4e62;
     }
 
     .stop-btn:hover {
-      background: #8d1f2a;
+      background: #bb4255;
     }
 
     button:hover { background: var(--accent-2); }
@@ -178,6 +209,10 @@
     th { color: var(--muted); font-weight: 600; }
     tr:last-child td { border-bottom: 0; }
 
+    tbody tr:hover td {
+      background: rgba(139, 193, 255, 0.06);
+    }
+
     th.actions-col,
     td.actions-col {
       width: 6.5rem;
@@ -186,7 +221,7 @@
     }
 
     a {
-      color: #0f4f9d;
+      color: var(--link);
       text-decoration: none;
       font-weight: 600;
     }
@@ -224,9 +259,9 @@
     }
 
     .recent-item {
-      background: #edf3f1;
-      color: #19453d;
-      border: 1px solid #c8ddd7;
+      background: rgba(36, 184, 146, 0.14);
+      color: #91f1d8;
+      border: 1px solid rgba(84, 207, 173, 0.45);
       border-radius: 999px;
       padding: 0.36rem 0.62rem;
       font-size: 0.84rem;
@@ -238,7 +273,7 @@
     }
 
     .recent-item:hover {
-      background: #dceae6;
+      background: rgba(36, 184, 146, 0.24);
     }
 
     @media (max-width: 760px) {
