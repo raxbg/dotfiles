@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenCode Servers</title>
+  <style>
+    :root {
+      --bg: #f4f5f7;
+      --panel: #ffffff;
+      --text: #1b1e28;
+      --muted: #626779;
+      --line: #dce1ea;
+      --accent: #0d6d5c;
+      --accent-2: #0a5a4c;
+      --warn: #b02a37;
+      --shadow: 0 12px 28px rgba(20, 25, 40, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top right, #dcebe7 0%, var(--bg) 42%);
+      color: var(--text);
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+    }
+
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 2rem 1rem 2.5rem;
+    }
+
+    .hero {
+      margin-bottom: 1.25rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.85rem;
+      letter-spacing: -0.02em;
+    }
+
+    .sub {
+      margin-top: 0.4rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.65rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      font: inherit;
+      border: 1px solid #bfc8d8;
+      border-radius: 10px;
+      padding: 0.68rem 0.75rem;
+      color: var(--text);
+      background: #fff;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 0.68rem 0.92rem;
+      font: inherit;
+      font-weight: 600;
+      color: #fff;
+      background: var(--accent);
+      cursor: pointer;
+    }
+
+    .stop-btn {
+      display: inline-block;
+      white-space: nowrap;
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      background: #b02a37;
+    }
+
+    .stop-btn:hover {
+      background: #8d1f2a;
+    }
+
+    button:hover { background: var(--accent-2); }
+    button:disabled { opacity: 0.65; cursor: wait; }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .count {
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    #table-wrap {
+      overflow-x: auto;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.56rem 0.4rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th { color: var(--muted); font-weight: 600; }
+    tr:last-child td { border-bottom: 0; }
+
+    th.actions-col,
+    td.actions-col {
+      width: 6.5rem;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    a {
+      color: #0f4f9d;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    .status { color: var(--muted); }
+
+    .flash {
+      margin-top: 0.75rem;
+      min-height: 1.1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .flash.error { color: var(--warn); }
+
+    @media (max-width: 760px) {
+      form { grid-template-columns: 1fr; }
+      table, thead, tbody, tr, td, th { display: block; }
+      thead { display: none; }
+      tr {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        margin-bottom: 0.7rem;
+        padding: 0.6rem;
+      }
+      td {
+        border-bottom: 0;
+        padding: 0.25rem 0;
+      }
+      td::before {
+        content: attr(data-label) ": ";
+        font-weight: 600;
+        color: var(--muted);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <h1>OpenCode Serve Dashboard</h1>
+      <div class="sub">Launch and track live OpenCode web servers from one place.</div>
+    </section>
+
+    <section class="panel">
+      <form id="launch-form">
+        <input id="directory" name="directory" type="text" placeholder="/absolute/path/to/project" required />
+        <button id="launch-btn" type="submit">Launch Server</button>
+      </form>
+      <div id="flash" class="flash"></div>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <div id="count" class="count">Active servers: 0</div>
+        <button id="refresh-btn" type="button">Refresh</button>
+      </div>
+      <div id="table-wrap"></div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("launch-form");
+    const directoryInput = document.getElementById("directory");
+    const launchButton = document.getElementById("launch-btn");
+    const refreshButton = document.getElementById("refresh-btn");
+    const flash = document.getElementById("flash");
+    const count = document.getElementById("count");
+    const tableWrap = document.getElementById("table-wrap");
+
+    function setFlash(message, isError = false) {
+      flash.textContent = message;
+      flash.className = isError ? "flash error" : "flash";
+    }
+
+    function renderServers(servers) {
+      count.textContent = "Active servers: " + servers.length;
+
+      if (!servers.length) {
+        tableWrap.innerHTML = "<div class='status'>No active OpenCode serve containers found.</div>";
+        return;
+      }
+
+      const rows = servers.map((server) => {
+        const originHost = window.location.hostname || "localhost";
+        const protocol = window.location.protocol || "http:";
+        const serverUrl = server.port
+          ? protocol + "//" + originHost + ":" + server.port
+          : "";
+        const urlCell = serverUrl
+          ? "<a href='" + serverUrl + "' target='_blank' rel='noreferrer'>" + serverUrl + "</a>"
+          : "-";
+        const source = server.sourceDir || "-";
+        const since = server.runningFor || "-";
+        const status = server.status || "-";
+        const name = server.name || "-";
+        const stopButton = server.id
+          ? "<button class='stop-btn' data-action='stop' data-id='" + server.id + "' data-name='" + name + "' type='button'>Stop</button>"
+          : "-";
+
+        return "<tr>" +
+          "<td data-label='URL'>" + urlCell + "</td>" +
+          "<td data-label='Container'>" + name + "</td>" +
+          "<td data-label='Directory'>" + source + "</td>" +
+          "<td data-label='Started'>" + since + "</td>" +
+          "<td data-label='Status'>" + status + "</td>" +
+          "<td class='actions-col' data-label='Actions'>" + stopButton + "</td>" +
+          "</tr>";
+      }).join("");
+
+      tableWrap.innerHTML =
+        "<table><thead><tr><th>URL</th><th>Container</th><th>Directory</th><th>Started</th><th>Status</th><th class='actions-col'>Actions</th></tr></thead><tbody>" +
+        rows +
+        "</tbody></table>";
+    }
+
+    async function loadServers() {
+      try {
+        const response = await fetch("/api/servers");
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Failed to load servers.");
+        }
+        renderServers(payload.servers || []);
+      } catch (error) {
+        setFlash(error.message || "Failed to load servers.", true);
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const directory = directoryInput.value.trim();
+      if (!directory) {
+        setFlash("Directory is required.", true);
+        return;
+      }
+
+      launchButton.disabled = true;
+      setFlash("Launching server...");
+
+      try {
+        const response = await fetch("/api/launch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ directory }),
+        });
+
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Launch failed.");
+        }
+
+        setFlash(payload.message || "Launch request accepted.");
+        setTimeout(loadServers, 1500);
+      } catch (error) {
+        setFlash(error.message || "Launch failed.", true);
+      } finally {
+        launchButton.disabled = false;
+      }
+    });
+
+    tableWrap.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-action='stop']");
+      if (!button) {
+        return;
+      }
+
+      const containerId = button.dataset.id || "";
+      const containerName = button.dataset.name || containerId;
+
+      if (!containerId) {
+        setFlash("Missing container id.", true);
+        return;
+      }
+
+      const confirmed = window.confirm("Stop server " + containerName + "?");
+      if (!confirmed) {
+        return;
+      }
+
+      button.disabled = true;
+      setFlash("Stopping server...");
+
+      try {
+        const response = await fetch("/api/stop", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: containerId }),
+        });
+
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Stop failed.");
+        }
+
+        setFlash(payload.message || "Server stopped.");
+        await loadServers();
+      } catch (error) {
+        setFlash(error.message || "Stop failed.", true);
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    refreshButton.addEventListener("click", loadServers);
+    loadServers();
+    setInterval(loadServers, 10000);
+  </script>
+</body>
+</html>

@@ -41,6 +41,7 @@ fi
 
 echo "🚀 Starting OpenCode..."
 
+SOURCE_DIR="$(pwd)"
 WORKTREE_NAME=$(pwd | sed 's/[^a-zA-Z0-9_-]/_/g')
 
 is_port_in_use() {
@@ -130,7 +131,11 @@ build_docker_command() {
   fi
   
   local docker_cmd=(docker run --rm --memory=3g --memory-swap=3g --name "$CONTAINER_NAME")
-  docker_cmd+=(-it)
+  if [ "$SERVE_MODE" = true ]; then
+    docker_cmd+=(-d)
+  else
+    docker_cmd+=(-it)
+  fi
   #docker_cmd+=(-p 4096:4096)
   docker_cmd+=(-v "$SHARE_VOLUME_NAME:/home/node/.local/share:rw")
   docker_cmd+=(-v opencode-go-cache:/go-cache:rw)
@@ -149,6 +154,11 @@ build_docker_command() {
 
   if [ "$SERVE_MODE" = true ]; then
     docker_cmd+=(-p "${SERVE_PORT}:${SERVE_PORT}")
+    docker_cmd+=(--label opencode.managed=true)
+    docker_cmd+=(--label opencode.mode=serve)
+    docker_cmd+=(--label "opencode.port=${SERVE_PORT}")
+    docker_cmd+=(--label "opencode.source_dir=${SOURCE_DIR}")
+    docker_cmd+=(--label "opencode.worktree_name=${WORKTREE_NAME}")
     docker_cmd+=(-e OPENCODE_MODE=serve)
     docker_cmd+=(-e OPENCODE_HOSTNAME=0.0.0.0)
     docker_cmd+=(-e OPENCODE_PORT="${SERVE_PORT}")
@@ -298,10 +308,12 @@ cleanup_mcp() {
 trap cleanup_mcp EXIT INT TERM
 
 # Start MCP before docker container (only if not already running)
-if ! is_mcp_running; then
-  start_mcp
-else
-  echo "🔍 MCP server already running on port 31811, skipping startup..."
+if [ "$SERVE_MODE" = false ]; then
+  if ! is_mcp_running; then
+    start_mcp
+  else
+    echo "🔍 MCP server already running on port 31811, skipping startup..."
+  fi
 fi
 
 # Start container normally
