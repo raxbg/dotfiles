@@ -59,4 +59,12 @@ trap cleanup_tunnels EXIT INT TERM
 
 start_localhost_tunnels
 
-/usr/local/bin/opencode
+MODE="${OPENCODE_MODE:-tui}"
+
+if [ "$MODE" = "serve" ]; then
+    HOSTNAME_VALUE="${OPENCODE_HOSTNAME:-0.0.0.0}"
+    PORT_VALUE="${OPENCODE_PORT:-4096}"
+    exec /usr/local/bin/opencode serve --hostname "$HOSTNAME_VALUE" --port "$PORT_VALUE"
+fi
+
+exec /usr/local/bin/opencode "$@"

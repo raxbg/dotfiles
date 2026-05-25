@@ -4,6 +4,8 @@
 INPLACE_MODE=true
 TMUX_MODE=false
 BUILD_ONLY=false
+SERVE_MODE=false
+SERVE_PORT=""
 SHARE_VOLUME_NAME="opencode-share"
 EXPECT_SHARE_VOLUME_NAME=false
 for arg in "$@"; do
@@ -23,6 +25,9 @@ for arg in "$@"; do
     build)
       BUILD_ONLY=true
       ;;
+    serve)
+      SERVE_MODE=true
+      ;;
     -v)
       EXPECT_SHARE_VOLUME_NAME=true
       ;;
@@ -37,6 +42,20 @@ fi
 echo "🚀 Starting OpenCode..."
 
 WORKTREE_NAME=$(pwd | sed 's/[^a-zA-Z0-9_-]/_/g')
+
+is_port_in_use() {
+  timeout 1 bash -c "cat < /dev/null > /dev/tcp/127.0.0.1/$1" 2>/dev/null
+}
+
+find_free_port() {
+  local port=4096
+
+  while is_port_in_use "$port"; do
+    port=$((port + 1))
+  done
+
+  echo "$port"
+}
 
 # Check if current directory is a git repository and inplace mode is not enabled
 if [ "$INPLACE_MODE" = false ] && git rev-parse --git-dir > /dev/null 2>&1; then
@@ -87,7 +106,13 @@ PROJECT_MOUNT="$PROJECT_MOUNT/$WORKTREE_NAME"
 
 # Get the absolute path of the script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONTAINER_NAME="opencode$WORKTREE_NAME"
+
+if [ "$SERVE_MODE" = true ]; then
+  SERVE_PORT="$(find_free_port)"
+  CONTAINER_NAME="opencode${WORKTREE_NAME}-serve-${SERVE_PORT}"
+else
+  CONTAINER_NAME="opencode$WORKTREE_NAME"
+fi
 
 # Build the docker image
 build_image() {
@@ -99,7 +124,7 @@ build_image() {
 # Build the docker command array
 build_docker_command() {
   # Check if container already exists
-  if docker ps -q -f name="^${CONTAINER_NAME}$" | grep -q .; then
+  if [ "$SERVE_MODE" = false ] && docker ps -q -f name="^${CONTAINER_NAME}$" | grep -q .; then
     echo "docker exec -it $CONTAINER_NAME /bin/bash"
     return 0
   fi
@@ -121,6 +146,13 @@ build_docker_command() {
   docker_cmd+=(-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin)
   docker_cmd+=(-e GOCACHE=/go-cache)
   docker_cmd+=(-e GOPATH=/go-path)
+
+  if [ "$SERVE_MODE" = true ]; then
+    docker_cmd+=(-p "${SERVE_PORT}:${SERVE_PORT}")
+    docker_cmd+=(-e OPENCODE_MODE=serve)
+    docker_cmd+=(-e OPENCODE_HOSTNAME=0.0.0.0)
+    docker_cmd+=(-e OPENCODE_PORT="${SERVE_PORT}")
+  fi
 
   # Clipboard support
   if [[ "$(uname -s)" == "Linux" ]]; then
@@ -170,6 +202,11 @@ fi
 
 # Handle tmux mode
 if [ "$TMUX_MODE" = true ]; then
+  if [ "$SERVE_MODE" = true ]; then
+    echo "❌ tmux mode cannot be combined with serve mode"
+    exit 1
+  fi
+
   if ! command -v tmux &> /dev/null; then
     echo "❌ tmux is not installed. Please install tmux first."
     exit 1
@@ -269,3 +306,7 @@ fi
 
 # Start container normally
 start_container
+
+if [ "$SERVE_MODE" = true ]; then
+  echo "🌐 OpenCode serve mode running at http://localhost:${SERVE_PORT}"
+fi
