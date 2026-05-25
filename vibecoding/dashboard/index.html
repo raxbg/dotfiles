@@ -62,6 +62,11 @@
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 0.65rem;
+      align-items: start;
+    }
+
+    .dir-field {
+      position: relative;
     }
 
     input[type="text"] {
@@ -72,6 +77,46 @@
       padding: 0.68rem 0.75rem;
       color: var(--text);
       background: #fff;
+    }
+
+    .dir-suggestions {
+      position: absolute;
+      top: calc(100% + 0.35rem);
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: none;
+      max-height: 260px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #c5cedd;
+      border-radius: 10px;
+      box-shadow: 0 10px 22px rgba(20, 25, 40, 0.12);
+      padding: 0.28rem;
+    }
+
+    .dir-suggestions.open {
+      display: block;
+    }
+
+    .dir-suggestion-item {
+      display: block;
+      width: 100%;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      text-align: left;
+      padding: 0.48rem 0.52rem;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dir-suggestion-item:hover {
+      background: #edf1f8;
     }
 
     button {
@@ -159,8 +204,49 @@
 
     .flash.error { color: var(--warn); }
 
+    .recent-wrap {
+      margin-top: 0.95rem;
+      padding-top: 0.85rem;
+      border-top: 1px dashed var(--line);
+    }
+
+    .recent-title {
+      margin: 0 0 0.55rem;
+      font-size: 0.92rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .recent-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+
+    .recent-item {
+      background: #edf3f1;
+      color: #19453d;
+      border: 1px solid #c8ddd7;
+      border-radius: 999px;
+      padding: 0.36rem 0.62rem;
+      font-size: 0.84rem;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .recent-item:hover {
+      background: #dceae6;
+    }
+
     @media (max-width: 760px) {
       form { grid-template-columns: 1fr; }
+      .dir-suggestions {
+        position: static;
+        margin-top: 0.45rem;
+      }
       table, thead, tbody, tr, td, th { display: block; }
       thead { display: none; }
       tr {
@@ -190,10 +276,19 @@
 
     <section class="panel">
       <form id="launch-form">
-        <input id="directory" name="directory" type="text" placeholder="/absolute/path/to/project" required />
+        <div class="dir-field">
+          <input id="directory" name="directory" type="text" placeholder="/absolute/path/to/project" autocomplete="off" required />
+          <div id="directory-suggestions" class="dir-suggestions"></div>
+        </div>
         <button id="launch-btn" type="submit">Launch Server</button>
       </form>
       <div id="flash" class="flash"></div>
+      <div class="recent-wrap">
+        <p class="recent-title">Recent projects (last 10)</p>
+        <div id="recent-list" class="recent-list">
+          <span class="status">No recent launches yet.</span>
+        </div>
+      </div>
     </section>
 
     <section class="panel">
@@ -213,10 +308,108 @@
     const flash = document.getElementById("flash");
     const count = document.getElementById("count");
     const tableWrap = document.getElementById("table-wrap");
+    const recentList = document.getElementById("recent-list");
+    const directorySuggestions = document.getElementById("directory-suggestions");
+    let suggestTimer = null;
+    let suggestAbortController = null;
 
     function setFlash(message, isError = false) {
       flash.textContent = message;
       flash.className = isError ? "flash error" : "flash";
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function renderRecentDirs(recent) {
+      const list = Array.isArray(recent) ? recent : [];
+
+      if (!list.length) {
+        recentList.innerHTML = "<span class='status'>No recent launches yet.</span>";
+        return;
+      }
+
+      recentList.innerHTML = list
+        .map((dir) => {
+          const escapedDir = escapeHtml(dir);
+          return "<button class='recent-item' type='button' data-action='launch-recent' data-dir='" + escapedDir + "' title='Launch " + escapedDir + "'>" + escapedDir + "</button>";
+        })
+        .join("");
+    }
+
+    function renderDirectorySuggestions(dirs) {
+      const list = Array.isArray(dirs) ? dirs : [];
+      directorySuggestions.innerHTML = "";
+
+      if (!list.length) {
+        directorySuggestions.classList.remove("open");
+        return;
+      }
+
+      for (const dir of list) {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "dir-suggestion-item";
+        item.dataset.action = "choose-dir";
+        item.dataset.dir = dir;
+        item.textContent = dir;
+        directorySuggestions.appendChild(item);
+      }
+
+      directorySuggestions.classList.add("open");
+    }
+
+    async function loadDirectorySuggestions() {
+      const query = directoryInput.value.trim();
+      if (!query) {
+        renderDirectorySuggestions([]);
+        return;
+      }
+
+      if (suggestAbortController) {
+        suggestAbortController.abort();
+      }
+
+      suggestAbortController = new AbortController();
+
+      try {
+        const response = await fetch(
+          "/api/dirs?path=" + encodeURIComponent(query),
+          { signal: suggestAbortController.signal },
+        );
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Failed to load directory suggestions.");
+        }
+        renderDirectorySuggestions(payload.dirs || []);
+      } catch (error) {
+        if (error && error.name === "AbortError") {
+          return;
+        }
+
+        renderDirectorySuggestions([]);
+      }
+    }
+
+    async function loadRecentDirs() {
+      try {
+        const response = await fetch("/api/recent");
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Failed to load recent projects.");
+        }
+
+        renderRecentDirs(payload.recent || []);
+      } catch (error) {
+        renderRecentDirs([]);
+        setFlash(error.message || "Failed to load recent projects.", true);
+      }
     }
 
     function renderServers(servers) {
@@ -273,12 +466,10 @@
       }
     }
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const directory = directoryInput.value.trim();
+    async function launchDirectory(directory) {
       if (!directory) {
         setFlash("Directory is required.", true);
-        return;
+        return false;
       }
 
       launchButton.disabled = true;
@@ -297,12 +488,65 @@
         }
 
         setFlash(payload.message || "Launch request accepted.");
+        renderRecentDirs(payload.recent || []);
         setTimeout(loadServers, 1500);
+        return true;
       } catch (error) {
         setFlash(error.message || "Launch failed.", true);
+        return false;
       } finally {
         launchButton.disabled = false;
       }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const directory = directoryInput.value.trim();
+      renderDirectorySuggestions([]);
+      await launchDirectory(directory);
+    });
+
+    directoryInput.addEventListener("input", () => {
+      if (suggestTimer !== null) {
+        window.clearTimeout(suggestTimer);
+      }
+
+      suggestTimer = window.setTimeout(() => {
+        loadDirectorySuggestions();
+      }, 180);
+    });
+
+    directoryInput.addEventListener("focus", () => {
+      loadDirectorySuggestions();
+    });
+
+    directoryInput.addEventListener("blur", () => {
+      window.setTimeout(() => {
+        directorySuggestions.classList.remove("open");
+      }, 120);
+    });
+
+    directorySuggestions.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action='choose-dir']");
+      if (!button) {
+        return;
+      }
+
+      const selectedDir = button.dataset.dir || "";
+      directoryInput.value = selectedDir;
+      directorySuggestions.classList.remove("open");
+      directoryInput.focus();
+    });
+
+    recentList.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-action='launch-recent']");
+      if (!button) {
+        return;
+      }
+
+      const directory = button.dataset.dir || "";
+      directoryInput.value = directory;
+      await launchDirectory(directory);
     });
 
     tableWrap.addEventListener("click", async (event) => {
@@ -349,6 +593,7 @@
     });
 
     refreshButton.addEventListener("click", loadServers);
+    loadRecentDirs();
     loadServers();
     setInterval(loadServers, 10000);
   </script>

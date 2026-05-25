@@ -11,7 +11,29 @@ const HOST = process.env.OPENCODE_DASHBOARD_HOST || "0.0.0.0";
 const PORT = Number(process.env.OPENCODE_DASHBOARD_PORT || 31900);
 const RUN_SCRIPT_PATH = path.resolve(__dirname, "..", "run.sh");
 const INDEX_HTML_PATH = path.resolve(__dirname, "index.html");
+const RECENT_LAUNCHES_PATH = path.resolve(__dirname, "recent-launches.json");
+const MAX_RECENT_DIRS = 10;
+const MAX_DIR_SUGGESTIONS = 50;
 let indexHtmlCache = null;
+
+function expandHome(inputPath) {
+  const value = String(inputPath || "");
+  const home = process.env.HOME || "";
+
+  if (!home) {
+    return value;
+  }
+
+  if (value === "~") {
+    return home;
+  }
+
+  if (value.startsWith("~/")) {
+    return path.join(home, value.slice(2));
+  }
+
+  return value;
+}
 
 function jsonResponse(res, statusCode, data) {
   res.writeHead(statusCode, {
@@ -154,6 +176,91 @@ async function stopServeContainer(containerId) {
   return { id };
 }
 
+async function readRecentDirs() {
+  try {
+    const raw = await fs.readFile(RECENT_LAUNCHES_PATH, "utf8");
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .map((item) => String(item || "").trim())
+      .filter(Boolean)
+      .slice(0, MAX_RECENT_DIRS);
+  } catch (error) {
+    if (error && error.code === "ENOENT") {
+      return [];
+    }
+
+    throw new Error("Failed to read recent launches.");
+  }
+}
+
+async function writeRecentDirs(dirs) {
+  await fs.writeFile(
+    RECENT_LAUNCHES_PATH,
+    `${JSON.stringify(dirs.slice(0, MAX_RECENT_DIRS), null, 2)}\n`,
+    "utf8",
+  );
+}
+
+async function rememberRecentDir(directory) {
+  const cleanDirectory = String(directory || "").trim();
+  if (!cleanDirectory) {
+    return [];
+  }
+
+  const existing = await readRecentDirs();
+  const updated = existing.filter((entry) => entry !== cleanDirectory);
+  updated.unshift(cleanDirectory);
+  await writeRecentDirs(updated);
+  return updated.slice(0, MAX_RECENT_DIRS);
+}
+
+async function listDirectorySuggestions(inputPath) {
+  const rawInput = String(inputPath || "").trim();
+  if (!rawInput) {
+    return [];
+  }
+
+  const expandedInput = expandHome(rawInput);
+  const hasTrailingSlash = expandedInput.endsWith(path.sep);
+  const baseCandidate = hasTrailingSlash
+    ? expandedInput
+    : path.dirname(expandedInput);
+  const namePrefix = hasTrailingSlash ? "" : path.basename(expandedInput);
+  const baseDir = path.resolve(baseCandidate || path.sep);
+
+  let stat;
+  try {
+    stat = await fs.stat(baseDir);
+  } catch {
+    return [];
+  }
+
+  if (!stat.isDirectory()) {
+    return [];
+  }
+
+  let entries;
+  try {
+    entries = await fs.readdir(baseDir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+
+  const suggestions = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .filter((name) => name.startsWith(namePrefix))
+    .sort((a, b) => a.localeCompare(b))
+    .slice(0, MAX_DIR_SUGGESTIONS)
+    .map((name) => path.join(baseDir, name));
+
+  return suggestions;
+}
+
 async function appHtml() {
   if (indexHtmlCache !== null) {
     return indexHtmlCache;
@@ -221,12 +328,39 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "GET" && url.pathname === "/api/recent") {
+    try {
+      const recent = await readRecentDirs();
+      jsonResponse(res, 200, { recent });
+    } catch (error) {
+      jsonResponse(res, 500, {
+        error: error.message || "Failed to load recent launches.",
+      });
+    }
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/dirs") {
+    try {
+      const inputPath = url.searchParams.get("path") || "";
+      const dirs = await listDirectorySuggestions(inputPath);
+      jsonResponse(res, 200, { dirs });
+    } catch (error) {
+      jsonResponse(res, 500, {
+        error: error.message || "Failed to load directory suggestions.",
+      });
+    }
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/launch") {
     try {
       const body = await collectJson(req);
       const result = await launchServeContainer(body.directory);
+      const recent = await rememberRecentDir(result.directory);
       jsonResponse(res, 202, {
         message: `Launch requested for ${result.directory}.`,
+        recent,
       });
     } catch (error) {
       jsonResponse(res, 400, { error: error.message || "Launch failed." });

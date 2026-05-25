@@ -19,5 +19,9 @@ The dashboard can:
 - List active OpenCode containers launched in `serve` mode
 - Start a new `serve` container from a directory you provide
 - Stop a running `serve` container from the Actions column
+- Remember the last 10 launched directories on disk for one-click relaunch across devices
+- Show directory-only autocomplete suggestions while typing a path
 
 It discovers containers through docker labels added by `run.sh` in `serve` mode.
+
+Recent launches are stored in `dashboard/recent-launches.json`.
