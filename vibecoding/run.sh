@@ -273,49 +273,6 @@ if [ "$TMUX_MODE" = true ]; then
   exit 0
 fi
 
-# Check if MCP is already running on port 9090
-is_mcp_running() {
-  timeout 1 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/31811' 2>/dev/null
-}
-
-# Start MCP for Chrome DevTools
-start_mcp() {
-  echo "🚀 Starting Chrome DevTools MCP..."
-
-  echo "⚠️ Chrome Devtools MCP not detected, starting a fresh one..."
-  npx -y supergateway \
-    --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --no-performance-crux" \
-    --outputTransport streamableHttp --stateful \
-    --sessionTimeout 86400000 --port 31811 > /dev/null 2>&1 &
-
-  MCP_PID=$!
-  echo "📝 MCP started with PID: $MCP_PID"
-
-  # Give MCP a moment to start
-  sleep 2
-}
-
-# Cleanup MCP process on exit
-cleanup_mcp() {
-  if [ -n "$MCP_PID" ] && kill -0 "$MCP_PID" 2>/dev/null; then
-    echo "🧹 Cleaning up MCP process (PID: $MCP_PID)..."
-    kill "$MCP_PID" 2>/dev/null
-    wait "$MCP_PID" 2>/dev/null
-  fi
-}
-
-# Set up cleanup trap
-trap cleanup_mcp EXIT INT TERM
-
-# Start MCP before docker container (only if not already running)
-if [ "$SERVE_MODE" = false ]; then
-  if ! is_mcp_running; then
-    start_mcp
-  else
-    echo "🔍 MCP server already running on port 31811, skipping startup..."
-  fi
-fi
-
 # Start container normally
 start_container
 
