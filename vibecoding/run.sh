@@ -151,6 +151,7 @@ build_docker_command() {
   docker_cmd+=(-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin)
   docker_cmd+=(-e GOCACHE=/go-cache)
   docker_cmd+=(-e GOPATH=/go-path)
+  docker_cmd+=(-e HOST_ADDR="${HOST_ADDR:-host.docker.internal}")
 
   if [ "$SERVE_MODE" = true ]; then
     docker_cmd+=(-p "${SERVE_PORT}:${SERVE_PORT}")
