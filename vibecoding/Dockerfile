@@ -1,8 +1,9 @@
 FROM node:24-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends git curl bash fzf ripgrep unzip wget ca-certificates gcc socat \
-python3 python3-pip python3-venv wl-clipboard \
-php-cli
+RUN apt-get update && apt-get install -y --no-install-recommends git curl bash fzf ripgrep unzip wget ca-certificates gcc socat sudo \
+python3 python3-pip python3-venv wl-clipboard php-cli \
+&& echo "node ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/node \
+&& chmod 0440 /etc/sudoers.d/node
 
 RUN ARCH=$(uname -m) && \
     case $ARCH in \
