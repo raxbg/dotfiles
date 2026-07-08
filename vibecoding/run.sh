@@ -108,6 +108,9 @@ PROJECT_MOUNT="$PROJECT_MOUNT/$WORKTREE_NAME"
 # Get the absolute path of the script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+AGENTS_DIR="$HOME/.agents"
+mkdir -p "$AGENTS_DIR"
+
 if [ "$SERVE_MODE" = true ]; then
   SERVE_PORT="$(find_free_port)"
   CONTAINER_NAME="opencode${WORKTREE_NAME}-serve-${SERVE_PORT}"
@@ -142,6 +145,7 @@ build_docker_command() {
   docker_cmd+=(-v opencode-go-path:/go-path:rw)
   docker_cmd+=(-v "$PROJECT_MOUNT")
   docker_cmd+=(-v "$SCRIPT_DIR/opencode:/home/node/.config/opencode")
+  docker_cmd+=(-v "$AGENTS_DIR:/home/node/.agents")
   docker_cmd+=(-v "$SCRIPT_DIR/entrypoint.sh:/etc/entrypoint.sh")
   docker_cmd+=(-v "$HOME/.config/nvim:/home/node/.config/nvim")
   if [ -f "$HOME/.nvimrc" ]; then
