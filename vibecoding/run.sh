@@ -148,6 +148,9 @@ build_docker_command() {
   docker_cmd+=(-v "$AGENTS_DIR:/home/node/.agents")
   docker_cmd+=(-v "$SCRIPT_DIR/entrypoint.sh:/etc/entrypoint.sh")
   docker_cmd+=(-v "$HOME/.config/nvim:/home/node/.config/nvim")
+  if [ -f "$HOME/.config/git/ignore" ]; then
+    docker_cmd+=(-v "$HOME/.config/git/ignore:/home/node/.config/git/ignore:ro")
+  fi
   if [ -f "$HOME/.nvimrc" ]; then
     docker_cmd+=(-v "$HOME/.nvimrc:/home/node/.nvimrc")
   fi
