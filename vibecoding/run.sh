@@ -166,6 +166,7 @@ build_docker_command() {
   docker_cmd+=(-e GOPATH=/go-path)
   docker_cmd+=(-e HOST_ADDR="${HOST_ADDR:-host.docker.internal}")
   docker_cmd+=(-e OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1)
+  docker_cmd+=(-e OPENCODE_EXPERIMENTAL_PLAN_MODE=1)
 
   if [ "$SERVE_MODE" = true ]; then
     docker_cmd+=(-p "${SERVE_PORT}:${SERVE_PORT}")
