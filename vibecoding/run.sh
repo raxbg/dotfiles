@@ -7,6 +7,7 @@ BUILD_ONLY=false
 SERVE_MODE=false
 SERVE_PORT=""
 SHARE_VOLUME_NAME="opencode-share"
+PLUGIN_CACHE_VOLUME="opencode-plugin-cache"
 EXPECT_SHARE_VOLUME_NAME=false
 for arg in "$@"; do
   if [ "$EXPECT_SHARE_VOLUME_NAME" = true ]; then
@@ -127,6 +128,10 @@ build_image() {
 
 # Build the docker command array
 build_docker_command() {
+  docker run --rm --user 0:0 --entrypoint /bin/sh \
+    -v "$PLUGIN_CACHE_VOLUME:/home/node/.cache/opencode:rw" \
+    opencode:latest -c "chown -R $(id -u):$(id -g) /home/node/.cache/opencode"
+
   # Check if container already exists
   if [ "$SERVE_MODE" = false ] && docker ps -q -f name="^${CONTAINER_NAME}$" | grep -q .; then
     echo "docker exec -it $CONTAINER_NAME /bin/bash"
@@ -141,6 +146,7 @@ build_docker_command() {
   fi
   #docker_cmd+=(-p 4096:4096)
   docker_cmd+=(-v "$SHARE_VOLUME_NAME:/home/node/.local/share:rw")
+  docker_cmd+=(-v "$PLUGIN_CACHE_VOLUME:/home/node/.cache/opencode:rw")
   docker_cmd+=(-v opencode-go-cache:/go-cache:rw)
   docker_cmd+=(-v opencode-go-path:/go-path:rw)
   docker_cmd+=(-v "$PROJECT_MOUNT")
