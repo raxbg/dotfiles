@@ -11,7 +11,7 @@ RUN ARCH=$(uname -m) && \
         aarch64) GO_ARCH="arm64" ;; \
         *) echo "Unsupported architecture: $ARCH" && exit 1 ;; \
     esac && \
-    curl https://go.dev/dl/go1.25.6.linux-${GO_ARCH}.tar.gz -L -o /tmp/go.tar.gz && \
+    curl https://go.dev/dl/go1.26.5.linux-${GO_ARCH}.tar.gz -L -o /tmp/go.tar.gz && \
     tar -C /usr/local -xzf /tmp/go.tar.gz
 
 # Install latest Neovim from official Linux tarball with architecture detection
