@@ -4,6 +4,7 @@
 INPLACE_MODE=true
 TMUX_MODE=false
 BUILD_ONLY=false
+BUILD_ALL=false
 SERVE_MODE=false
 SERVE_PORT=""
 SHARE_VOLUME_NAME="opencode-share"
@@ -25,6 +26,9 @@ for arg in "$@"; do
       ;;
     build)
       BUILD_ONLY=true
+      ;;
+    --all)
+      BUILD_ALL=true
       ;;
     serve)
       SERVE_MODE=true
@@ -122,7 +126,11 @@ fi
 # Build the docker image
 build_image() {
   echo "🐳 Building OpenCode image..."
-  docker build --no-cache -t opencode:latest $SCRIPT_DIR -f "$SCRIPT_DIR/Dockerfile"
+  if [ "$BUILD_ALL" = true ]; then
+    docker build --no-cache -t opencode:latest $SCRIPT_DIR -f "$SCRIPT_DIR/Dockerfile"
+  else
+    docker build --no-cache-filter opencode -t opencode:latest $SCRIPT_DIR -f "$SCRIPT_DIR/Dockerfile"
+  fi
   echo "✅ OpenCode image built successfully"
 }
 

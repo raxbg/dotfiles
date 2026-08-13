@@ -1,6 +1,6 @@
-FROM node:24-slim
+FROM node:24-slim AS base
 
-RUN apt-get update && apt-get install -y --no-install-recommends git curl bash fzf ripgrep unzip wget ca-certificates gcc socat sudo \
+RUN apt-get update && apt-get install -y --no-install-recommends git curl bash fzf ripgrep unzip wget ca-certificates build-essential libc6-dev socat sudo \
 python3 python3-pip python3-venv wl-clipboard php-cli \
 && echo "node ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/node \
 && chmod 0440 /etc/sudoers.d/node
@@ -26,6 +26,8 @@ RUN ARCH=$(uname -m) && \
     mv nvim-linux-${NVIM_ARCH} /opt/nvim && \
     ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim && \
     rm nvim-linux-${NVIM_ARCH}.tar.gz
+
+FROM base AS opencode
 
 RUN npm i -g opencode-ai@latest
 
