@@ -146,7 +146,7 @@ build_docker_command() {
     return 0
   fi
   
-  local docker_cmd=(docker run --rm --memory=3g --memory-swap=3g --name "$CONTAINER_NAME")
+  local docker_cmd=(docker run --rm --memory=6g --memory-swap=6g --name "$CONTAINER_NAME")
   if [ "$SERVE_MODE" = true ]; then
     docker_cmd+=(-d)
   else
