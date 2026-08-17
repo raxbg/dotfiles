@@ -32,6 +32,7 @@
     }
   },
   "permission": {
+    "external_directory": "allow",
     "bash": {
       "*git*commit*": "deny",
       "*git*push*": "deny",
