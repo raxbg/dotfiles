@@ -1,0 +1,17 @@
+@import "~/.config/rofi/config.rasi"
+
+window {
+    height: 60%;
+}
+
+listview {
+    columns: 3;
+    lines: 3;
+    fixed-height: true;
+    dynamic: false;
+    scrollbar: true;
+}
+
+element-icon {
+    size: 128px;
+}

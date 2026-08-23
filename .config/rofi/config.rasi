@@ -1,6 +1,6 @@
 configuration {
     combi-modi: "drun,run";
-    modi: "combi,calc";
+    modi: "combi,calc,wallpaper:sh -c '$HOME/.config/hypr/scripts/wallpaper-selector.sh --rofi \"$@\"' _";
     show-icons: true;
     icon-theme: "Papirus";
     combi-hide-mode-prefix: true;

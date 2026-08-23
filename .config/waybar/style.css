@@ -53,6 +53,7 @@
 #battery,
 #pulseaudio,
 #backlight,
+#custom-wallpaper,
 #custom-temperature,
 #memory {
   background-color: rgba(36,46,66,0.9);
@@ -72,6 +73,7 @@
 #network:hover,
 /*#tray:hover,*/
 #backlight:hover,
+#custom-wallpaper:hover,
 #battery:hover,
 #pulseaudio:hover,
 #custom-temperature:hover,
