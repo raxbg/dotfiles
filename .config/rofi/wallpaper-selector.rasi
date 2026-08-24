@@ -1,17 +1,37 @@
 @import "~/.config/rofi/config.rasi"
 
 window {
-    height: 60%;
+    location: west;
+    anchor: west;
+    y-offset: 0;
+    width: 220px;
+    border-radius: 0px 12px 12px 0px;
+}
+
+mainbox {
+    padding: 8px;
+}
+
+inputbar {
+    enabled: false;
 }
 
 listview {
-    columns: 3;
-    lines: 3;
-    fixed-height: true;
-    dynamic: false;
-    scrollbar: true;
+    columns: 1;
+    lines: 5;
+    fixed-height: false;
+    margin: 0;
+}
+
+element {
+    padding: 4px;
+    border-radius: 4px;
 }
 
 element-icon {
-    size: 128px;
+    size: 196px;
+}
+
+element-text {
+    enabled: false;
 }
