@@ -24,7 +24,20 @@ func reply(conn net.Conn, ok bool, err string) {
 	json.NewEncoder(conn).Encode(map[string]any{"ok": ok, "error": err})
 }
 
-func notify(conn net.Conn) {
+func playSound(soundPath string) {
+	if _, err := os.Stat(soundPath); err != nil {
+		return
+	}
+	player, err := exec.LookPath("pw-play")
+	if err != nil {
+		player, err = exec.LookPath("paplay")
+	}
+	if err == nil {
+		go exec.Command(player, soundPath).Run()
+	}
+}
+
+func notify(conn net.Conn, soundPath string) {
 	defer conn.Close()
 	data, err := io.ReadAll(io.LimitReader(conn, 8193))
 	if err != nil || len(data) > 8192 || len(data) == 0 || data[len(data)-1] != '\n' {
@@ -44,16 +57,18 @@ func notify(conn net.Conn) {
 		reply(conn, false, err.Error())
 		return
 	}
+	playSound(soundPath)
 	reply(conn, true, "")
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintln(os.Stderr, "usage: bridge.go SOCKET_PATH")
+	if len(os.Args) != 3 {
+		fmt.Fprintln(os.Stderr, "usage: bridge.go SOCKET_PATH SOUND_PATH")
 		os.Exit(2)
 	}
 
 	socketPath := os.Args[1]
+	soundPath := os.Args[2]
 	listener, err := net.Listen("unix", socketPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -78,6 +93,6 @@ func main() {
 		if err != nil {
 			return
 		}
-		go notify(connection)
+		go notify(connection, soundPath)
 	}
 }

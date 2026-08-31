@@ -163,7 +163,7 @@ start_bridge() {
   fi
   local socket_path="$BRIDGE_DIR/${socket_name##*/}"
 
-  setsid go run "$SCRIPT_DIR/bridge.go" "$socket_path" >/dev/null 2>&1 &
+  setsid go run "$SCRIPT_DIR/bridge.go" "$socket_path" "$SCRIPT_DIR/agent-notification.oga" >/dev/null 2>&1 &
   BRIDGE_PID=$!
   for _ in {1..50}; do
     [ -S "$socket_path" ] && break
