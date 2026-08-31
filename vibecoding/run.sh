@@ -10,6 +10,9 @@ SERVE_PORT=""
 SHARE_VOLUME_NAME="opencode-share"
 PLUGIN_CACHE_VOLUME="opencode-plugin-cache"
 EXPECT_SHARE_VOLUME_NAME=false
+BRIDGE_DIR=""
+BRIDGE_PID=""
+BRIDGE_SOCKET_CONTAINER=""
 for arg in "$@"; do
   if [ "$EXPECT_SHARE_VOLUME_NAME" = true ]; then
     SHARE_VOLUME_NAME="$arg"
@@ -134,6 +137,58 @@ build_image() {
   echo "✅ OpenCode image built successfully"
 }
 
+cleanup_bridge() {
+  if [ -n "$BRIDGE_PID" ] && kill -0 "$BRIDGE_PID" 2>/dev/null; then
+    kill -- "-$BRIDGE_PID" 2>/dev/null || true
+    wait "$BRIDGE_PID" 2>/dev/null || true
+  fi
+  [ -n "$BRIDGE_DIR" ] && rmdir "$BRIDGE_DIR" 2>/dev/null || true
+}
+
+start_bridge() {
+  if [[ "$(uname -s)" != "Linux" ]] || [ -z "${XDG_RUNTIME_DIR:-}" ] || [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ] || ! command -v go >/dev/null || ! command -v setsid >/dev/null || ! command -v notify-send >/dev/null; then
+    return
+  fi
+
+  local runtime_dir="$XDG_RUNTIME_DIR"
+  if ! BRIDGE_DIR=$(mktemp -d "$runtime_dir/opencode-bridge.XXXXXX"); then
+    BRIDGE_DIR=""
+    return
+  fi
+  local socket_name
+  if ! socket_name=$(mktemp -u "$BRIDGE_DIR/bridge.XXXXXX.sock"); then
+    rmdir "$BRIDGE_DIR" 2>/dev/null || true
+    BRIDGE_DIR=""
+    return
+  fi
+  local socket_path="$BRIDGE_DIR/${socket_name##*/}"
+
+  setsid go run "$SCRIPT_DIR/bridge.go" "$socket_path" >/dev/null 2>&1 &
+  BRIDGE_PID=$!
+  for _ in {1..50}; do
+    [ -S "$socket_path" ] && break
+    sleep 0.1
+  done
+  if [ ! -S "$socket_path" ]; then
+    cleanup_bridge
+    BRIDGE_DIR=""
+    BRIDGE_PID=""
+    return
+  fi
+
+  BRIDGE_SOCKET_HOST="$socket_path"
+  BRIDGE_SOCKET_CONTAINER="/run/opencode-bridge/${socket_path##*/}"
+
+  (
+    for _ in {1..300}; do
+      docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1 && break
+      sleep 0.1
+    done
+    while docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; do sleep 2; done
+    cleanup_bridge
+  ) >/dev/null 2>&1 &
+}
+
 # Build the docker command array
 build_docker_command() {
   docker run --rm --user 0:0 --entrypoint /bin/sh \
@@ -159,6 +214,9 @@ build_docker_command() {
   docker_cmd+=(-v opencode-go-path:/go-path:rw)
   docker_cmd+=(-v "$PROJECT_MOUNT")
   docker_cmd+=(-v "$SCRIPT_DIR/opencode:/home/node/.config/opencode")
+  if [ -n "$BRIDGE_DIR" ]; then
+    docker_cmd+=(-v "$BRIDGE_DIR:/run/opencode-bridge:ro")
+  fi
   docker_cmd+=(-v "$AGENTS_DIR:/home/node/.agents")
   docker_cmd+=(-v "$SCRIPT_DIR/entrypoint.sh:/etc/entrypoint.sh")
   docker_cmd+=(-v "$HOME/.config/nvim:/home/node/.config/nvim")
@@ -175,6 +233,9 @@ build_docker_command() {
   docker_cmd+=(-e HOST_ADDR="${HOST_ADDR:-host.docker.internal}")
   docker_cmd+=(-e OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1)
   docker_cmd+=(-e OPENCODE_EXPERIMENTAL_PLAN_MODE=1)
+  if [ -n "$BRIDGE_SOCKET_CONTAINER" ]; then
+    docker_cmd+=(-e OPENCODE_BRIDGE_SOCKET="$BRIDGE_SOCKET_CONTAINER")
+  fi
 
   if [ "$SERVE_MODE" = true ]; then
     docker_cmd+=(-p "${SERVE_PORT}:${SERVE_PORT}")
@@ -212,6 +273,7 @@ start_container() {
     build_image
   fi
 
+  start_bridge
   local docker_cmd
   docker_cmd=$(build_docker_command)
   
@@ -259,6 +321,7 @@ if [ "$TMUX_MODE" = true ]; then
   echo "🪟 Creating tmux window with two panes..."
   
   # Build the docker command once
+  start_bridge
   docker_cmd=$(build_docker_command)
   
   # Check if container exists for tmux mode
