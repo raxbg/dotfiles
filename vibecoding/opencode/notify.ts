@@ -21,9 +21,16 @@ export default async () => {
   const awaitingAttention = new Set<string>()
   const startedAt = new Map<string, number>()
   const checklistSessions = new Set<string>()
+  const subagentSessions = new Set<string>()
 
   return {
     event: async ({ event }) => {
+      if (event.type === "session.created" && event.properties.info.parentID) {
+        subagentSessions.add(event.properties.info.id)
+      }
+
+      if ("sessionID" in event.properties && subagentSessions.has(event.properties.sessionID)) return
+
       if (event.type === "permission.asked") {
         awaitingAttention.add(event.properties.sessionID)
         await notify("Agent needs approval", "Review the requested operation in OpenCode.", "critical")
