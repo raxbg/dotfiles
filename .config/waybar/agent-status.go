@@ -15,10 +15,11 @@ import (
 )
 
 type Update struct {
-	ID      string `json:"id"`
-	State   string `json:"state"`
-	Tooltip string `json:"tooltip"`
-	Todo    struct {
+	ID        string `json:"id"`
+	State     string `json:"state"`
+	Tooltip   string `json:"tooltip"`
+	Workspace string `json:"workspace"`
+	Todo      struct {
 		Current int `json:"current"`
 		Total   int `json:"total"`
 	} `json:"todo"`
@@ -30,6 +31,7 @@ type Agent struct {
 	current    int
 	total      int
 	tooltip    string
+	workspace  string
 	number     int
 }
 
@@ -53,7 +55,10 @@ func emit() {
 	text := make([]string, 0, len(items))
 	tooltips := make([]string, 0, len(items))
 	for _, agent := range items {
-		name := fmt.Sprintf("Agent %d", agent.number)
+		name := playfulName(agent.number)
+		if agent.workspace != "" {
+			name += " · " + agent.workspace
+		}
 		progress := ""
 		if agent.total > 0 {
 			progress = fmt.Sprintf(" %d/%d", agent.current, agent.total)
@@ -64,7 +69,7 @@ func emit() {
 			text = append(text, fmt.Sprintf(`<span color="#d97706">● %s%s</span>`, html.EscapeString(name), progress))
 		}
 		if agent.tooltip != "" {
-			tooltips = append(tooltips, fmt.Sprintf("<b>%s</b>\n%s", name, agent.tooltip))
+			tooltips = append(tooltips, fmt.Sprintf("<b>%s</b>\n%s", html.EscapeString(name), agent.tooltip))
 		}
 	}
 	tooltip := "Agent status"
@@ -72,6 +77,17 @@ func emit() {
 		tooltip = strings.Join(tooltips, "\n\n")
 	}
 	json.NewEncoder(os.Stdout).Encode(map[string]string{"text": strings.Join(text, " "), "tooltip": tooltip})
+}
+
+func playfulName(number int) string {
+	adjectives := [...]string{"Amber", "Cobalt", "Crimson", "Golden", "Indigo", "Jade", "Silver", "Violet"}
+	animals := [...]string{"Fox", "Lynx", "Owl", "Raven", "Tiger", "Wolf"}
+	index := number - 1
+	name := adjectives[index%len(adjectives)] + " " + animals[(index%len(adjectives)+index/len(adjectives))%len(animals)]
+	if index >= len(adjectives)*len(animals) {
+		name += fmt.Sprintf(" %d", index/(len(adjectives)*len(animals))+1)
+	}
+	return name
 }
 
 func handle(connection net.Conn) {
@@ -95,7 +111,7 @@ func handle(connection net.Conn) {
 			continue
 		}
 		update.ID = strings.TrimSpace(update.ID)
-		if update.ID == "" || len(update.ID) > 200 || len(update.Tooltip) > 8000 || (update.State != "running" && update.State != "ready" && update.State != "gone") || update.Todo.Current < 0 || update.Todo.Total < update.Todo.Current {
+		if update.ID == "" || len(update.ID) > 200 || len(update.Tooltip) > 8000 || len(update.Workspace) > 200 || (update.State != "running" && update.State != "ready" && update.State != "gone") || update.Todo.Current < 0 || update.Todo.Total < update.Todo.Current {
 			continue
 		}
 		mu.Lock()
@@ -103,12 +119,16 @@ func handle(connection net.Conn) {
 			delete(agents, update.ID)
 		} else {
 			number := nextAgent
+			workspace := update.Workspace
 			if agent, ok := agents[update.ID]; ok {
 				number = agent.number
+				if workspace == "" {
+					workspace = agent.workspace
+				}
 			} else {
 				nextAgent++
 			}
-			agents[update.ID] = Agent{connection, update.State, update.Todo.Current, update.Todo.Total, update.Tooltip, number}
+			agents[update.ID] = Agent{connection: connection, state: update.State, current: update.Todo.Current, total: update.Todo.Total, tooltip: update.Tooltip, workspace: workspace, number: number}
 		}
 		emit()
 		mu.Unlock()

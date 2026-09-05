@@ -50,6 +50,7 @@ fi
 echo "🚀 Starting OpenCode..."
 
 SOURCE_DIR="$(pwd)"
+WORKSPACE_NAME="$(basename "$SOURCE_DIR")"
 WORKTREE_NAME=$(pwd | sed 's/[^a-zA-Z0-9_-]/_/g')
 
 is_port_in_use() {
@@ -163,7 +164,7 @@ start_bridge() {
   fi
   local socket_path="$BRIDGE_DIR/${socket_name##*/}"
 
-  setsid go run "$SCRIPT_DIR/bridge.go" "$socket_path" "$SCRIPT_DIR/agent-notification.oga" >/dev/null 2>&1 &
+  setsid go run "$SCRIPT_DIR/bridge.go" "$socket_path" "$SCRIPT_DIR/agent-notification.oga" "$WORKSPACE_NAME" >/dev/null 2>&1 &
   BRIDGE_PID=$!
   for _ in {1..50}; do
     [ -S "$socket_path" ] && break
