@@ -1,138 +1,165 @@
+/* Inspired by HANCORE Linux Waybar Themes V7.1a:
+ * https://github.com/HANCORE-linux/waybar-themes/tree/main/config/V7.1a
+ */
+
+@define-color background #242e42;
+@define-color foreground #dcdfe1;
+
 * {
-  font-family: "Roboto", "Font Awesome 6 Free", "Font Awesome 6 Free Solid";
-  font-weight: bold;
-  font-size: 16px;
-  color: #dcdfe1;
-}
-
-#waybar {
-  background-color: rgba(0, 0, 0, 0);
   border: none;
-  box-shadow: none;
+  border-radius: 0;
+  min-height: 0;
+  font-family: "JetBrainsMono Nerd Font";
+  font-size: 14px;
+  font-weight: bold;
+  color: @foreground;
 }
 
-#workspaces,
-#window,
-#tray,
-#keyboard-state,
-#clock,
-#custom-agents {
-  /*background-color: rgba(29,31,46, 0.95);*/
-  background-color: rgba(36,46,66,0.9);
-  padding: 4px 6px;
-  margin-top: 6px;
-  margin-left: 6px;
-  margin-right: 6px;
-  border-radius: 10px;
-  border-width: 0px;
+window#waybar {
+  background: transparent;
 }
 
-#custom-power,
-#custom-lock,
-#cpu {
-  background-color: rgba(36,46,66,0.9);
-  margin-top: 6px;
-  margin-right: 6px;
-  /*margin-bottom: 4px;*/
-  padding: 4px 2px;
-  border-radius: 0 10px 10px 0;
-  border-width: 0px;
+.modules-left,
+.modules-center,
+.modules-right {
+  min-height: 30px;
+  margin: 10px 5px 0;
+  padding: 0 5px;
+  border-radius: 20px;
+  background-color: @background;
 }
 
-#network{
-  background-color: rgba(36,46,66,0.9);
-  margin-top: 6px;
-  margin-left: 6px;
-  /*margin-bottom: 4px;*/
-  padding: 4px 2px;
-  border-radius: 10px 0 0 10px;
-  border-width: 0px;
+#workspaces {
+  margin: 5px 0;
+  padding: 0;
+  border-radius: 15px;
+  background-color: alpha(@foreground, 0.05);
 }
 
-#custom-reboot,
-#bluetooth,
+#workspaces button {
+  min-width: 20px;
+  min-height: 20px;
+  margin: 0 2px;
+  padding: 0 5px;
+  border-radius: 50%;
+  font-family: "JetBrainsMono Nerd Font Mono";
+  color: alpha(@foreground, 0.65);
+  background-color: alpha(@foreground, 0.12);
+}
+
+#workspaces button label {
+  color: alpha(@foreground, 0.65);
+}
+
+#workspaces button.active {
+  color: @background;
+  background-color: @foreground;
+  opacity: 1;
+}
+
+#workspaces button.active label {
+  color: @background;
+}
+
+#workspaces button.empty {
+  opacity: 0.2;
+}
+
+#workspaces button.empty.active {
+  opacity: 0.75;
+}
+
+#workspaces button:hover,
+#workspaces button.active:hover {
+  color: @background;
+  background-color: alpha(@foreground, 0.3);
+  opacity: 1;
+  transition: 0.7s;
+}
+
+#network,
 #battery,
+#bluetooth,
 #pulseaudio,
 #backlight,
 #custom-wallpaper,
 #custom-temperature,
-#memory {
-  background-color: rgba(36,46,66,0.9);
-  margin-top: 6px;
-  /*margin-bottom: 4px;*/
-  padding: 4px 2px;
-  border-width: 0px;
+#memory,
+#cpu,
+#custom-agents {
+  margin: 5px 0;
+  padding: 5px 12px;
+  background-color: alpha(@foreground, 0.1);
 }
 
-#custpm-temperature.critical,
-#pulseaudio.muted {
-  color: #FF0000;
-  padding-top: 0;
+#clock {
+  margin: 5px 0;
+  padding: 0 15px;
+  border-radius: 15px;
+  background-color: transparent;
+}
+
+#custom-agents {
+  padding: 0 12px;
+  border-radius: 15px;
+}
+
+#tray {
+  margin: 5px;
+  padding: 0 2px;
+  background-color: transparent;
+}
+
+#network {
+  margin-left: 5px;
+  border-radius: 15px 0 0 15px;
+}
+
+#cpu {
+  margin-right: 0;
+  padding: 0 15px 0 10px;
+  border-radius: 0 15px 15px 0;
+}
+
+#battery {
+  margin-left: 5px;
+  padding: 0 8px;
+  border-radius: 15px;
+  color: @background;
+  background-color: @foreground;
+}
+
+#backlight {
+  margin: 5px;
+  padding: 5px 10px;
+  border-radius: 15px;
 }
 
 #bluetooth:hover,
 #network:hover,
-/*#tray:hover,*/
 #backlight:hover,
 #custom-wallpaper:hover,
-#battery:hover,
 #pulseaudio:hover,
 #custom-temperature:hover,
 #memory:hover,
 #cpu:hover,
 #clock:hover,
-#custom-agents:hover,
-#custom-lock:hover,
-#custom-reboot:hover,
-#custom-power:hover,
-/*#workspaces:hover,*/
-#window:hover {
-  background-color: rgba(70, 75, 90, 0.9);
+#custom-agents:hover {
+  background-color: alpha(@foreground, 0.2);
+  transition: 0.7s;
 }
 
-#workspaces button:hover{
-  background-color: rgba(97, 175, 239, 0.2);
-  padding: 2px 8px;
-  margin: 0 2px;
-  border-radius: 10px;
+#pulseaudio.muted,
+#custom-temperature.critical {
+  color: #a55555;
 }
 
-#workspaces button.active {
-  background-color: #61afef;
-  color: #ffffff;
-  padding: 2px 8px;
-  margin: 0 2px;
-  border-radius: 10px;
+tooltip {
+  border: 2px solid alpha(@foreground, 0.5);
+  border-radius: 15px;
+  background: @background;
 }
 
-#workspaces button {
-  background: transparent;
-  border: none;
-  color: #888888;
-  padding: 2px 8px;
-  margin: 0 2px;
-  font-weight: bold;
-}
-
-#window {
-  font-weight: 500;
-  font-style: italic;
-}
-
-#workspaces {
-  margin-left: 20px;
-}
-
-#clock {
-  margin-right: 0;
-  border-radius: 10px 0 0 10px;
-}
-
-#custom-agents {
-  margin-left: 0;
-  border-radius: 0 10px 10px 0;
-}
-
-#cpu {
-  margin-right: 20px;
+tooltip label {
+  padding: 6px;
 }
