@@ -46,5 +46,5 @@
     "port": 4096,
     "hostname": "0.0.0.0"
   },
-  "plugin": ["@dietrichgebert/ponytail", "./notify.ts"]
+  "plugin": ["@dietrichgebert/ponytail", "./notify.ts", "./agent-status.ts"]
 }

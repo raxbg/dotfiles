@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -37,10 +38,8 @@ func playSound(soundPath string) {
 	}
 }
 
-func notify(conn net.Conn, soundPath string) {
-	defer conn.Close()
-	data, err := io.ReadAll(io.LimitReader(conn, 8193))
-	if err != nil || len(data) > 8192 || len(data) == 0 || data[len(data)-1] != '\n' {
+func notify(conn net.Conn, soundPath string, data []byte) {
+	if len(data) > 8192 || len(data) == 0 {
 		reply(conn, false, "invalid message")
 		return
 	}
@@ -59,6 +58,46 @@ func notify(conn net.Conn, soundPath string) {
 	}
 	playSound(soundPath)
 	reply(conn, true, "")
+}
+
+func forwardAgentStatus(conn net.Conn, reader *bufio.Reader, id string) {
+	runtimeDir := os.Getenv("XDG_RUNTIME_DIR")
+	if runtimeDir == "" {
+		return
+	}
+	waybar, err := net.Dial("unix", filepath.Join(runtimeDir, "waybar-agent-status.sock"))
+	if err != nil {
+		return
+	}
+	defer waybar.Close()
+	if json.NewEncoder(waybar).Encode(map[string]string{"id": id, "state": "ready"}) != nil {
+		return
+	}
+	io.Copy(waybar, reader)
+}
+
+func handle(conn net.Conn, soundPath string) {
+	defer conn.Close()
+	reader := bufio.NewReaderSize(conn, 8192)
+	line, err := reader.ReadSlice('\n')
+	if err != nil {
+		return
+	}
+	var envelope struct {
+		Type string `json:"type"`
+		ID   string `json:"id"`
+	}
+	if json.Unmarshal(line, &envelope) != nil {
+		return
+	}
+	switch envelope.Type {
+	case "notification":
+		notify(conn, soundPath, line)
+	case "agent-status":
+		if envelope.ID != "" && len(envelope.ID) <= 200 {
+			forwardAgentStatus(conn, reader, envelope.ID)
+		}
+	}
 }
 
 func main() {
@@ -93,6 +132,6 @@ func main() {
 		if err != nil {
 			return
 		}
-		go notify(connection, soundPath)
+		go handle(connection, soundPath)
 	}
 }

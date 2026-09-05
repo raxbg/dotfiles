@@ -1,5 +1,6 @@
 {
   "layer": "top",
+  "reload_style_on_change": true,
   "position": "top",
   "output": "DP-1",
   "height": 37,
@@ -10,7 +11,8 @@
     //"custom/power"
   ],
   "modules-center": [
-    "clock"
+    "clock",
+    "custom/agents"
     //"custom/lock"
   ],
   "modules-right": [
@@ -143,6 +145,11 @@
   "tray": {
     "icon-size": 17,
     "spacing": 6
+  },
+  "custom/agents": {
+    "exec": "go run ~/.config/waybar/agent-status.go",
+    "return-type": "json",
+    "escape": false
   },
   "backlight": {
     "device": "intel_backlight",

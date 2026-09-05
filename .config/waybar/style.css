@@ -15,7 +15,8 @@
 #window,
 #tray,
 #keyboard-state,
-#clock {
+#clock,
+#custom-agents {
   /*background-color: rgba(29,31,46, 0.95);*/
   background-color: rgba(36,46,66,0.9);
   padding: 4px 6px;
@@ -80,6 +81,7 @@
 #memory:hover,
 #cpu:hover,
 #clock:hover,
+#custom-agents:hover,
 #custom-lock:hover,
 #custom-reboot:hover,
 #custom-power:hover,
@@ -119,6 +121,16 @@
 
 #workspaces {
   margin-left: 20px;
+}
+
+#clock {
+  margin-right: 0;
+  border-radius: 10px 0 0 10px;
+}
+
+#custom-agents {
+  margin-left: 0;
+  border-radius: 0 10px 10px 0;
 }
 
 #cpu {
