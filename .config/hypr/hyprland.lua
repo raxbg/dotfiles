@@ -3,10 +3,239 @@ local file_manager = "thunar"
 local menu = "rofi -show combi"
 local main_mod = "SUPER"
 
--- Monitor-specific rules take precedence; the blank output is the portable fallback.
-hl.monitor({ output = "DP-1", mode = "preferred", position = "0x0", scale = "auto" })
-hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@144", position = "320x1440", scale = "auto" })
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1.5 })
+-- Let new outputs initialize before the topology reconciler assigns their roles.
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
+
+local topology = { main = nil, secondary = nil }
+local workspace_rule_cache = { main = {}, secondary = {} }
+local active_workspace_rules = { main = {}, secondary = {} }
+local devtools_rule_cache = {}
+local active_devtools_rule = nil
+local active_devtools_target = nil
+local reconcile_timer = nil
+
+local function is_builtin_monitor(monitor)
+    local connector = monitor.name:match("^([^-]+)")
+    connector = connector and connector:upper() or ""
+    return connector == "EDP" or connector == "LVDS" or connector == "DSI"
+end
+
+local function monitor_before(a, b)
+    local a_area = a.width * a.height
+    local b_area = b.width * b.height
+    return a_area == b_area and a.name < b.name or a_area > b_area
+end
+
+local function discover_monitor_roles()
+    local monitors = hl.get_monitors()
+    local builtins = {}
+
+    if #monitors == 0 then
+        return nil, nil, {}
+    end
+
+    for _, monitor in ipairs(monitors) do
+        if is_builtin_monitor(monitor) then
+            table.insert(builtins, monitor)
+        end
+    end
+
+    table.sort(monitors, monitor_before)
+    table.sort(builtins, monitor_before)
+
+    local main = builtins[1] or monitors[1]
+    local remaining = {}
+    for _, monitor in ipairs(monitors) do
+        if monitor.name ~= main.name then
+            table.insert(remaining, monitor)
+        end
+    end
+    table.sort(remaining, monitor_before)
+
+    return main, remaining[1], remaining
+end
+
+local function desired_scale(monitor)
+    return is_builtin_monitor(monitor) and 1.5 or "auto"
+end
+
+local function logical_size(monitor)
+    local width = monitor.width
+    local height = monitor.height
+    if monitor.transform % 2 == 1 then
+        width, height = height, width
+    end
+
+    local scale = is_builtin_monitor(monitor) and 1.5 or monitor.scale
+    scale = scale > 0 and scale or 1
+    return math.floor(width / scale + 0.5), math.floor(height / scale + 0.5)
+end
+
+local function configure_monitors(main, remaining)
+    hl.monitor({
+        output = main.name,
+        mode = "preferred",
+        position = "0x0",
+        scale = desired_scale(main),
+    })
+
+    local main_width, main_height = logical_size(main)
+    local secondary = remaining[1]
+    if secondary then
+        local secondary_width = logical_size(secondary)
+        hl.monitor({
+            output = secondary.name,
+            mode = "preferred",
+            position = tostring(math.floor((main_width - secondary_width) / 2)) .. "x" .. main_height,
+            scale = desired_scale(secondary),
+        })
+    end
+
+    local x = main_width
+    for i = 2, #remaining do
+        local monitor = remaining[i]
+        hl.monitor({
+            output = monitor.name,
+            mode = "preferred",
+            position = tostring(x) .. "x0",
+            scale = desired_scale(monitor),
+        })
+        x = x + logical_size(monitor)
+    end
+end
+
+local function activate_workspace_rule(role, workspace, monitor_name, layout)
+    local workspace_cache = workspace_rule_cache[role][workspace] or {}
+    workspace_rule_cache[role][workspace] = workspace_cache
+
+    local old_rule = active_workspace_rules[role][workspace]
+    local rule = workspace_cache[monitor_name]
+    if old_rule and old_rule ~= rule and old_rule:is_enabled() then
+        old_rule:set_enabled(false)
+    end
+
+    if not rule then
+        rule = hl.workspace_rule({
+            workspace = tostring(workspace),
+            monitor = monitor_name,
+            layout = layout,
+        })
+        workspace_cache[monitor_name] = rule
+    elseif not rule:is_enabled() then
+        rule:set_enabled(true)
+    end
+
+    active_workspace_rules[role][workspace] = rule
+end
+
+local function disable_secondary_workspace_rules()
+    for workspace = 11, 16 do
+        local rule = active_workspace_rules.secondary[workspace]
+        if rule and rule:is_enabled() then
+            rule:set_enabled(false)
+        end
+        active_workspace_rules.secondary[workspace] = nil
+    end
+end
+
+local function move_existing_workspace(workspace_id, monitor_name)
+    local workspace = hl.get_workspace(tostring(workspace_id))
+    if workspace and workspace.monitor and workspace.monitor.name ~= monitor_name then
+        hl.dispatch(hl.dsp.workspace.move({ workspace = workspace, monitor = monitor_name }))
+    end
+end
+
+local function configure_workspaces(main_name, secondary_name)
+    for workspace = 1, 6 do
+        activate_workspace_rule("main", workspace, main_name, workspace == 2 and "master" or nil)
+        move_existing_workspace(workspace, main_name)
+    end
+
+    if not secondary_name then
+        disable_secondary_workspace_rules()
+        return
+    end
+
+    for workspace = 11, 16 do
+        activate_workspace_rule("secondary", workspace, secondary_name)
+        move_existing_workspace(workspace, secondary_name)
+    end
+end
+
+local function configure_devtools_rule(target_name)
+    if active_devtools_target ~= target_name then
+        if active_devtools_rule and active_devtools_rule:is_enabled() then
+            active_devtools_rule:set_enabled(false)
+        end
+
+        local rule = devtools_rule_cache[target_name]
+        if not rule then
+            rule = hl.window_rule({
+                name = "dynamic-devtools-" .. target_name,
+                match = { class = "^(google-chrome|chromium|Chromium)$", initial_title = "^(DevTools)" },
+                float = true,
+                maximize = true,
+                monitor = target_name,
+            })
+            devtools_rule_cache[target_name] = rule
+        elseif not rule:is_enabled() then
+            rule:set_enabled(true)
+        end
+
+        active_devtools_rule = rule
+        active_devtools_target = target_name
+    end
+
+    for _, window in ipairs(hl.get_windows()) do
+        local is_chromium = window.class == "google-chrome"
+            or window.class == "chromium"
+            or window.class == "Chromium"
+        if is_chromium
+            and window.initial_title:match("^DevTools")
+            and window.monitor
+            and window.monitor.name ~= target_name
+        then
+            hl.dispatch(hl.dsp.window.move({ window = window, monitor = target_name, follow = false }))
+        end
+    end
+end
+
+local function reconcile_topology()
+    reconcile_timer = nil
+
+    local main, secondary, remaining = discover_monitor_roles()
+    if not main then
+        topology.main = nil
+        topology.secondary = nil
+        disable_secondary_workspace_rules()
+        return
+    end
+
+    topology.main = main.name
+    topology.secondary = secondary and secondary.name or nil
+    configure_monitors(main, remaining)
+    configure_workspaces(topology.main, topology.secondary)
+    configure_devtools_rule(topology.secondary or topology.main)
+end
+
+local function schedule_topology_reconcile()
+    if reconcile_timer and reconcile_timer:is_enabled() then
+        reconcile_timer:set_timeout(100)
+        return
+    end
+
+    reconcile_timer = hl.timer(reconcile_topology, { timeout = 100, type = "oneshot" })
+end
+
+hl.on("monitor.added", schedule_topology_reconcile)
+hl.on("monitor.removed", schedule_topology_reconcile)
+hl.on("hyprland.start", schedule_topology_reconcile)
+hl.on("config.reloaded", function()
+    -- The headless config verifier also emits this event, but has no monitors.
+    if #hl.get_monitors() > 0 then
+        schedule_topology_reconcile()
+    end
+end)
 
 hl.on("hyprland.start", function()
     hl.exec_cmd("~/.config/waybar/launch.sh")
@@ -133,15 +362,24 @@ hl.bind(main_mod .. " + ALT + L", hl.dsp.focus({ direction = "right" }))
 hl.bind(main_mod .. " + ALT + K", hl.dsp.focus({ direction = "up" }))
 hl.bind(main_mod .. " + ALT + J", hl.dsp.focus({ direction = "down" }))
 
--- Activate the paired support and main workspaces, then retain monitor focus.
-local function switch_workspace_pair(main)
+-- Activate paired workspaces when a secondary monitor exists, then retain focus.
+local function switch_workspace_pair(main_workspace)
     return function()
-        local focused_monitor = hl.get_active_monitor()
-        hl.dispatch(hl.dsp.focus({ workspace = "1" .. main }))
-        hl.dispatch(hl.dsp.focus({ workspace = main }))
+        local main, secondary = discover_monitor_roles()
+        if not main then
+            return
+        end
 
-        if focused_monitor then
-            hl.dispatch(hl.dsp.focus({ monitor = focused_monitor }))
+        local focused_monitor = hl.get_active_monitor()
+        local focused_name = focused_monitor and focused_monitor.name or nil
+
+        if secondary then
+            hl.dispatch(hl.dsp.focus({ workspace = tostring(10 + main_workspace) }))
+        end
+        hl.dispatch(hl.dsp.focus({ workspace = tostring(main_workspace) }))
+
+        if focused_name and hl.get_monitor(focused_name) then
+            hl.dispatch(hl.dsp.focus({ monitor = focused_name }))
         end
     end
 end
@@ -155,8 +393,18 @@ for i = 1, 9 do
 end
 hl.bind(main_mod .. " + SHIFT + 0", hl.dsp.window.move({ workspace = 10, follow = false }))
 
-hl.bind(main_mod .. " + K", hl.dsp.window.move({ monitor = "DP-1" }))
-hl.bind(main_mod .. " + J", hl.dsp.window.move({ monitor = "HDMI-A-1" }))
+local function move_window_to_monitor_role(role)
+    return function()
+        local main, secondary = discover_monitor_roles()
+        local target = role == "main" and main or secondary or main
+        if target then
+            hl.dispatch(hl.dsp.window.move({ monitor = target.name }))
+        end
+    end
+end
+
+hl.bind(main_mod .. " + K", move_window_to_monitor_role("main"))
+hl.bind(main_mod .. " + J", move_window_to_monitor_role("secondary"))
 hl.bind(main_mod .. " + H", hl.dsp.window.move({ direction = "left" }))
 hl.bind(main_mod .. " + L", hl.dsp.window.move({ direction = "right" }))
 
@@ -187,29 +435,10 @@ hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), locked)
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), locked)
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), locked)
 
-for i = 1, 6 do
-    hl.workspace_rule({
-        workspace = tostring(i),
-        monitor = "DP-1",
-        layout = i == 2 and "master" or nil,
-    })
-end
-
-for i = 11, 16 do
-    hl.workspace_rule({ workspace = tostring(i), monitor = "HDMI-A-1" })
-end
-
 hl.workspace_rule({ workspace = "special:players", on_created_empty = "spotify" })
 hl.workspace_rule({ workspace = "special:ai", on_created_empty = "gtk-launch chrome-cadlkienfkclaiaibeoongdcgmdikeeg-Default" })
 hl.workspace_rule({ workspace = "special:whatsapp", on_created_empty = "gtk-launch chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default" })
 hl.workspace_rule({ workspace = "special:telegram", on_created_empty = "Telegram" })
-
-hl.window_rule({
-    match = { class = "^(google-chrome|chromium|Chromium)$", initial_title = "^(DevTools)" },
-    float = true,
-    maximize = true,
-    monitor = "HDMI-A-1",
-})
 
 hl.window_rule({
     match = { class = "org.telegram.desktop" },
