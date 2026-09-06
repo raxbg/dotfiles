@@ -13,6 +13,7 @@ local devtools_rule_cache = {}
 local active_devtools_rule = nil
 local active_devtools_target = nil
 local reconcile_timer = nil
+local session_started = false
 
 local function is_builtin_monitor(monitor)
     local connector = monitor.name:match("^([^-]+)")
@@ -228,12 +229,21 @@ local function schedule_topology_reconcile()
     reconcile_timer = hl.timer(reconcile_topology, { timeout = 100, type = "oneshot" })
 end
 
-hl.on("monitor.added", schedule_topology_reconcile)
+hl.on("monitor.added", function()
+    schedule_topology_reconcile()
+    if session_started then
+        hl.exec_cmd("sleep 1 && ~/.config/hypr/scripts/wallpaper-selector.sh --restore")
+    end
+end)
 hl.on("monitor.removed", schedule_topology_reconcile)
-hl.on("hyprland.start", schedule_topology_reconcile)
+hl.on("hyprland.start", function()
+    session_started = true
+    schedule_topology_reconcile()
+end)
 hl.on("config.reloaded", function()
     -- The headless config verifier also emits this event, but has no monitors.
     if #hl.get_monitors() > 0 then
+        session_started = true
         schedule_topology_reconcile()
     end
 end)
