@@ -121,20 +121,6 @@ window#waybar {
   border-radius: 0 15px 15px 0;
 }
 
-#battery {
-  margin-left: 5px;
-  padding: 0 8px;
-  border-radius: 15px;
-  color: @background;
-  background-color: @foreground;
-}
-
-#backlight {
-  margin: 5px;
-  padding: 5px 10px;
-  border-radius: 15px;
-}
-
 #bluetooth:hover,
 #network:hover,
 #backlight:hover,

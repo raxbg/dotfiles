@@ -111,43 +111,43 @@ foreach ($entries as $entry) {
 }
 
 //Install oh-my-zsh
-if (!is_dir(getenv("HOME") . "/.oh-my-zsh")) {
-    echo __g("Installing Oh My Zsh\n");
-    passthru('sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"', $ret_val);
-    if ($ret_val == 0) {
-        echo __g("Oh My Zsh installed succcessfully\n");
-    } else {
-        echo __r("Failed to install Oh My Zsh! Aborting script...\n");
-        exit;
-    }
-}
-
-//Install neovim
-echo __g("Installing NeoVim\n");
-passthru('/usr/bin/env which nvim', $ret_val);
-if ($ret_val == 0) {
-    echo __g("NeoVim already installed\n");
-} else {
-    passthru(__DIR__ . '/nvim-install.sh', $nvim_ret_val);
-    if ($nvim_ret_val == 0) {
-        echo __g("NeoVim installed succcessfully\n");
-    } else {
-        echo __r("Failed to install NeoVim! Aborting script...\n");
-        exit;
-    }
-}
+//if (!is_dir(getenv("HOME") . "/.oh-my-zsh")) {
+//    echo __g("Installing Oh My Zsh\n");
+//    passthru('sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"', $ret_val);
+//    if ($ret_val == 0) {
+//        echo __g("Oh My Zsh installed succcessfully\n");
+//    } else {
+//        echo __r("Failed to install Oh My Zsh! Aborting script...\n");
+//        exit;
+//    }
+//}
+//
+////Install neovim
+//echo __g("Installing NeoVim\n");
+//passthru('/usr/bin/env which nvim', $ret_val);
+//if ($ret_val == 0) {
+//    echo __g("NeoVim already installed\n");
+//} else {
+//    passthru(__DIR__ . '/nvim-install.sh', $nvim_ret_val);
+//    if ($nvim_ret_val == 0) {
+//        echo __g("NeoVim installed succcessfully\n");
+//    } else {
+//        echo __r("Failed to install NeoVim! Aborting script...\n");
+//        exit;
+//    }
+//}
 
 //Install kickstart
-if (!is_dir(getenv("HOME") . "/.config/nvim")) {
-    echo __g("Cloning Neovim Kickstart...\n");
-    passthru("git clone git@github.com:raxbg/kickstart.nvim.git ~/.config/nvim", $ret_val);
-    if ($ret_val == 0) {
-        echo __g("Kickstart installed succcessfully\n");
-    } else {
-        echo __r("Failed to install Kickstart! Aborting script...\n");
-        exit;
-    }
-}
+//if (!is_dir(getenv("HOME") . "/.config/nvim")) {
+//    echo __g("Cloning Neovim Kickstart...\n");
+//    passthru("git clone git@github.com:raxbg/kickstart.nvim.git ~/.config/nvim", $ret_val);
+//    if ($ret_val == 0) {
+//        echo __g("Kickstart installed succcessfully\n");
+//    } else {
+//        echo __r("Failed to install Kickstart! Aborting script...\n");
+//        exit;
+//    }
+//}
 
 //Install Tmux Plugin Manager
 if (!is_dir(getenv("HOME") . "/.tmux/plugins/tmp")) {

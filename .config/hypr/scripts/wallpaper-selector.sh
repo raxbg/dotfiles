@@ -11,6 +11,7 @@ apply_wallpaper() {
 
     [[ -f "$wallpaper" ]] || return 1
 
+    mkdir -p "$state_dir"
     printf '%s\n' "$wallpaper" > "$state_file"
     awww img "$wallpaper" --transition-type wipe --transition-fps 75 --transition-step 255 >/dev/null 2>&1
     notify-send "Wallpaper changed" "$(basename "$wallpaper")" -t 3000
