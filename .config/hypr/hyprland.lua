@@ -389,6 +389,9 @@ for i = 1, 6 do
     hl.bind("ALT + " .. i, switch_workspace_pair(i))
 end
 
+hl.bind(main_mod .. " + SHIFT + H", hl.dsp.focus({ workspace = "e-1" }))
+hl.bind(main_mod .. " + SHIFT + L", hl.dsp.focus({ workspace = "e+1" }))
+
 for i = 1, 9 do
     hl.bind(main_mod .. " + SHIFT + " .. i, hl.dsp.window.move({ workspace = i, follow = false }))
 end
