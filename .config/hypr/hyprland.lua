@@ -82,11 +82,12 @@ local function configure_monitors(main, remaining)
     local main_width, main_height = logical_size(main)
     local secondary = remaining[1]
     if secondary then
-        local secondary_width = logical_size(secondary)
+        local secondary_width, secondary_height = logical_size(secondary)
+        local secondary_y = is_builtin_monitor(main) and -secondary_height or main_height
         hl.monitor({
             output = secondary.name,
             mode = "preferred",
-            position = tostring(math.floor((main_width - secondary_width) / 2)) .. "x" .. main_height,
+            position = tostring(math.floor((main_width - secondary_width) / 2)) .. "x" .. secondary_y,
             scale = desired_scale(secondary),
         })
     end
@@ -393,18 +394,27 @@ for i = 1, 9 do
 end
 hl.bind(main_mod .. " + SHIFT + 0", hl.dsp.window.move({ workspace = 10, follow = false }))
 
-local function move_window_to_monitor_role(role)
+local function move_window_vertically(direction)
     return function()
         local main, secondary = discover_monitor_roles()
-        local target = role == "main" and main or secondary or main
+        local secondary_is_above = main and is_builtin_monitor(main)
+        local target
+
+        if direction == "up" then
+            target = secondary_is_above and secondary or main
+        else
+            target = secondary_is_above and main or secondary
+        end
+
+        target = target or main
         if target then
             hl.dispatch(hl.dsp.window.move({ monitor = target.name }))
         end
     end
 end
 
-hl.bind(main_mod .. " + K", move_window_to_monitor_role("main"))
-hl.bind(main_mod .. " + J", move_window_to_monitor_role("secondary"))
+hl.bind(main_mod .. " + K", move_window_vertically("up"))
+hl.bind(main_mod .. " + J", move_window_vertically("down"))
 hl.bind(main_mod .. " + H", hl.dsp.window.move({ direction = "left" }))
 hl.bind(main_mod .. " + L", hl.dsp.window.move({ direction = "right" }))
 
