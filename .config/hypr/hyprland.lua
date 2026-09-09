@@ -458,7 +458,7 @@ hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), locked)
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), locked)
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), locked)
 
-hl.workspace_rule({ workspace = "special:players", on_created_empty = "spotify" })
+hl.workspace_rule({ workspace = "special:players", on_created_empty = terminal .. " -e cliamp --provider spotify" })
 hl.workspace_rule({ workspace = "special:ai", on_created_empty = "gtk-launch chrome-cadlkienfkclaiaibeoongdcgmdikeeg-Default" })
 hl.workspace_rule({ workspace = "special:whatsapp", on_created_empty = "gtk-launch chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default" })
 hl.workspace_rule({ workspace = "special:telegram", on_created_empty = "Telegram" })
