@@ -164,7 +164,7 @@ start_bridge() {
   fi
   local socket_path="$BRIDGE_DIR/${socket_name##*/}"
 
-  setsid go run "$SCRIPT_DIR/bridge.go" "$socket_path" "$SCRIPT_DIR/agent-notification.oga" "$WORKSPACE_NAME" >/dev/null 2>&1 &
+  setsid go run "$SCRIPT_DIR/bridge.go" "$socket_path" "$SCRIPT_DIR/agent-notification.oga" >/dev/null 2>&1 &
   BRIDGE_PID=$!
   for _ in {1..50}; do
     [ -S "$socket_path" ] && break
@@ -234,6 +234,7 @@ build_docker_command() {
   docker_cmd+=(-e HOST_ADDR="${HOST_ADDR:-host.docker.internal}")
   docker_cmd+=(-e OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1)
   docker_cmd+=(-e OPENCODE_EXPERIMENTAL_PLAN_MODE=1)
+  docker_cmd+=(-e OPENCODE_WORKSPACE="$WORKSPACE_NAME")
   if [ -n "$BRIDGE_SOCKET_CONTAINER" ]; then
     docker_cmd+=(-e OPENCODE_BRIDGE_SOCKET="$BRIDGE_SOCKET_CONTAINER")
   fi
@@ -252,9 +253,13 @@ build_docker_command() {
 
   # Clipboard support
   if [[ "$(uname -s)" == "Linux" ]]; then
+    local agent_status_dir="$XDG_RUNTIME_DIR/waybar-agent-status"
+    mkdir -p "$agent_status_dir"
+    chmod 700 "$agent_status_dir"
     docker_cmd+=(--add-host host.docker.internal:host-gateway)
     docker_cmd+=(-u $(id -u):$(id -g))
     docker_cmd+=(-v $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/run/user/$(id -u)/$WAYLAND_DISPLAY)
+    docker_cmd+=(-v "$agent_status_dir:/run/user/$(id -u)/waybar-agent-status:ro")
     docker_cmd+=(-e XDG_RUNTIME_DIR=/run/user/$(id -u))
     docker_cmd+=(-e WAYLAND_DISPLAY=$WAYLAND_DISPLAY)
   elif [[ "$(uname -s)" == "Darwin" ]]; then

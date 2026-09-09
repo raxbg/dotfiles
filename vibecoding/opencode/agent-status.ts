@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 import { createConnection, type Socket } from "node:net"
+import { basename, join } from "node:path"
 
 type Session = {
   title: string
@@ -10,7 +11,9 @@ type Session = {
 const escape = (text: string) => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
 
 export default async () => {
-  const path = process.env.OPENCODE_BRIDGE_SOCKET
+  const runtime = process.env.XDG_RUNTIME_DIR
+  const socketPath = runtime ? join(runtime, "waybar-agent-status", "socket") : undefined
+  const workspace = (process.env.OPENCODE_WORKSPACE ?? basename(process.cwd())).slice(0, 200)
   const id = randomUUID()
   const sessions = new Map<string, Session>()
   let socket: Socket | undefined
@@ -26,7 +29,7 @@ export default async () => {
       const icon = session.state === "running" ? "●" : "✓"
       return `<span color="${color}">${icon} ${escape(session.title)}${progress}</span>`
     }).join("\n")
-    if (connected) socket?.write(`${JSON.stringify({ id, state: active.length ? "running" : "ready", todo, tooltip })}\n`)
+    if (connected) socket?.write(`${JSON.stringify({ id, state: active.length ? "running" : "ready", todo, tooltip, workspace })}\n`)
   }
 
   const touch = (id: string, session: Session) => {
@@ -37,12 +40,11 @@ export default async () => {
   }
 
   const connect = () => {
-    if (!path) return
-    const connection = createConnection(path)
+    if (!socketPath) return
+    const connection = createConnection(socketPath)
     socket = connection
     connection.on("connect", () => {
       connected = true
-      connection.write(`${JSON.stringify({ type: "agent-status", id })}\n`)
       publish()
     })
     connection.on("error", () => {})
