@@ -77,12 +77,10 @@ window#waybar {
   transition: 0.7s;
 }
 
-#network,
 #battery,
 #bluetooth,
 #pulseaudio,
 #backlight,
-#custom-wallpaper,
 #custom-temperature,
 #memory,
 #cpu,
@@ -110,7 +108,7 @@ window#waybar {
   background-color: transparent;
 }
 
-#network {
+#battery {
   margin-left: 5px;
   border-radius: 15px 0 0 15px;
 }
@@ -121,24 +119,9 @@ window#waybar {
   border-radius: 0 15px 15px 0;
 }
 
-#battery {
-  margin-left: 5px;
-  padding: 0 8px;
-  border-radius: 15px;
-  color: @background;
-  background-color: @foreground;
-}
-
-#backlight {
-  margin: 5px;
-  padding: 5px 10px;
-  border-radius: 15px;
-}
-
 #bluetooth:hover,
-#network:hover,
+#battery:hover,
 #backlight:hover,
-#custom-wallpaper:hover,
 #pulseaudio:hover,
 #custom-temperature:hover,
 #memory:hover,

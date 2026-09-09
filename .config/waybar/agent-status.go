@@ -140,7 +140,14 @@ func main() {
 	if runtime == "" {
 		log.Fatal("XDG_RUNTIME_DIR is required")
 	}
-	path := filepath.Join(runtime, "waybar-agent-status.sock")
+	dir := filepath.Join(runtime, "waybar-agent-status")
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		log.Fatal(err)
+	}
+	if err := os.Chmod(dir, 0700); err != nil {
+		log.Fatal(err)
+	}
+	path := filepath.Join(dir, "socket")
 	os.Remove(path)
 	listener, err := net.Listen("unix", path)
 	if err != nil {
