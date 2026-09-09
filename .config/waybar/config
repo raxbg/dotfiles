@@ -17,11 +17,9 @@
   ],
   "modules-right": [
     "tray",
-    "network",
     "battery",
     "pulseaudio",
     "backlight",
-    "custom/wallpaper",
     "custom/temperature",
     "memory",
     "cpu",
@@ -65,16 +63,6 @@
     "tooltip": true,
     "tooltip-format": "Power Off"
   },
-  "network": {
-    "format-wifi": "<span color='#00FFFF'>󰤨</span> {essid} ",
-    "format-ethernet": "<span color='#16a34a'></span> Wired ",
-    //"format-ethernet": "<span color='#FF1493'> 󰅧 </span>  {bandwidthUpBytes}  <span color='#00BFFF'> 󰅢 </span>  {bandwidthDownBytes}",
-    "tooltip-format": "<span color='#FF1493'> 󰅧 </span>  {bandwidthUpBytes}  <span color='#00BFFF'> 󰅢 </span>  {bandwidthDownBytes}",
-    "format-linked": "<span color='#FFA500'>󱘖</span> {ifname} (No IP) ",
-    "format-disconnected": "<span color='#FF4040'></span> Disconnected ",
-    "format-alt": "<span color='#00FFFF'>󰤨</span> {signalStrength}% ",
-    "interval": 1
-  },
   "battery": {
     "states": {
       "warning": 30,
@@ -116,12 +104,6 @@
     "interval": 5,
     "tooltip": true,
     "tooltip-format": "CPU Temp: {}°C"
-  },
-  "custom/wallpaper": {
-    "format": "<span color='#BF00FF'>  </span>",
-    "on-click": "~/.config/hypr/scripts/wallpaper-selector.sh",
-    "tooltip": true,
-    "tooltip-format": "Select wallpaper"
   },
   "memory": {
     "format": "<span color='#8A2BE2'></span> {used:0.1f}G/{total:0.1f}G ",

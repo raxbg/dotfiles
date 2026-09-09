@@ -77,12 +77,10 @@ window#waybar {
   transition: 0.7s;
 }
 
-#network,
 #battery,
 #bluetooth,
 #pulseaudio,
 #backlight,
-#custom-wallpaper,
 #custom-temperature,
 #memory,
 #cpu,
@@ -110,7 +108,7 @@ window#waybar {
   background-color: transparent;
 }
 
-#network {
+#battery {
   margin-left: 5px;
   border-radius: 15px 0 0 15px;
 }
@@ -122,9 +120,8 @@ window#waybar {
 }
 
 #bluetooth:hover,
-#network:hover,
+#battery:hover,
 #backlight:hover,
-#custom-wallpaper:hover,
 #pulseaudio:hover,
 #custom-temperature:hover,
 #memory:hover,
