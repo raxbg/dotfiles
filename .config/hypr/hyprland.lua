@@ -14,6 +14,7 @@ local active_devtools_rule = nil
 local active_devtools_target = nil
 local reconcile_timer = nil
 local session_started = false
+local waybar_launch_pending = false
 
 local function is_builtin_monitor(monitor)
     local connector = monitor.name:match("^([^-]+)")
@@ -218,6 +219,11 @@ local function reconcile_topology()
     configure_monitors(main, remaining)
     configure_workspaces(topology.main, topology.secondary)
     configure_devtools_rule(topology.secondary or topology.main)
+
+    if waybar_launch_pending then
+        waybar_launch_pending = false
+        hl.exec_cmd("env WAYBAR_OUTPUT=" .. topology.main .. " ~/.config/waybar/launch.sh")
+    end
 end
 
 local function schedule_topology_reconcile()
@@ -238,6 +244,7 @@ end)
 hl.on("monitor.removed", schedule_topology_reconcile)
 hl.on("hyprland.start", function()
     session_started = true
+    waybar_launch_pending = true
     schedule_topology_reconcile()
 end)
 hl.on("config.reloaded", function()
@@ -249,7 +256,6 @@ hl.on("config.reloaded", function()
 end)
 
 hl.on("hyprland.start", function()
-    hl.exec_cmd("~/.config/waybar/launch.sh")
     hl.exec_cmd("hypridle")
     hl.exec_cmd("mako")
     hl.exec_cmd("blueman-applet")
