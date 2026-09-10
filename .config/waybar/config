@@ -15,12 +15,12 @@
     "custom/agents"
     //"custom/lock"
   ],
-  "modules-right": [
+    "modules-right": [
     "tray",
-    "battery",
     "pulseaudio",
     "backlight",
     "custom/temperature",
+    "battery",
     "memory",
     "cpu",
   ],

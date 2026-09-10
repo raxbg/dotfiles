@@ -108,7 +108,7 @@ window#waybar {
   background-color: transparent;
 }
 
-#battery {
+#pulseaudio {
   margin-left: 5px;
   border-radius: 15px 0 0 15px;
 }
