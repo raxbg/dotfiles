@@ -19,8 +19,8 @@
     "tray",
     "pulseaudio",
     "backlight",
-    "custom/temperature",
     "battery",
+    "custom/temperature",
     "memory",
     "cpu",
   ],
@@ -99,7 +99,7 @@
     "tooltip-format": "Volume: {volume}%"
   },
   "custom/temperature": {
-    "exec": "sensors | awk '/^Tctl:/ {printf \"%.2f\", $2}'",
+    "exec": "sensors | awk '/^Tctl:/ {printf \"%.2f\", $2; exit} /^Package id 0:/ {printf \"%.2f\", $4; exit}'",
     "format": "<span color='#FFA500'></span> {}°C ",
     "interval": 5,
     "tooltip": true,
