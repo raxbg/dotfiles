@@ -9,9 +9,6 @@ hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" 
 local topology = { main = nil, secondary = nil }
 local workspace_rule_cache = { main = {}, secondary = {} }
 local active_workspace_rules = { main = {}, secondary = {} }
-local devtools_rule_cache = {}
-local active_devtools_rule = nil
-local active_devtools_target = nil
 local reconcile_timer = nil
 local session_started = false
 local waybar_launch_pending = false
@@ -165,44 +162,6 @@ local function configure_workspaces(main_name, secondary_name)
     end
 end
 
-local function configure_devtools_rule(target_name)
-    if active_devtools_target ~= target_name then
-        if active_devtools_rule and active_devtools_rule:is_enabled() then
-            active_devtools_rule:set_enabled(false)
-        end
-
-        local rule = devtools_rule_cache[target_name]
-        if not rule then
-            rule = hl.window_rule({
-                name = "dynamic-devtools-" .. target_name,
-                match = { class = "^(google-chrome|chromium|Chromium)$", initial_title = "^(DevTools)" },
-                float = true,
-                maximize = true,
-                monitor = target_name,
-            })
-            devtools_rule_cache[target_name] = rule
-        elseif not rule:is_enabled() then
-            rule:set_enabled(true)
-        end
-
-        active_devtools_rule = rule
-        active_devtools_target = target_name
-    end
-
-    for _, window in ipairs(hl.get_windows()) do
-        local is_chromium = window.class == "google-chrome"
-            or window.class == "chromium"
-            or window.class == "Chromium"
-        if is_chromium
-            and window.initial_title:match("^DevTools")
-            and window.monitor
-            and window.monitor.name ~= target_name
-        then
-            hl.dispatch(hl.dsp.window.move({ window = window, monitor = target_name, follow = false }))
-        end
-    end
-end
-
 local function reconcile_topology()
     reconcile_timer = nil
 
@@ -218,7 +177,6 @@ local function reconcile_topology()
     topology.secondary = secondary and secondary.name or nil
     configure_monitors(main, remaining)
     configure_workspaces(topology.main, topology.secondary)
-    configure_devtools_rule(topology.secondary or topology.main)
 
     if waybar_launch_pending then
         waybar_launch_pending = false
@@ -371,7 +329,27 @@ hl.bind(main_mod .. " + E", hl.dsp.exec_cmd(file_manager))
 hl.bind("CTRL + Space", hl.dsp.exec_cmd(menu))
 hl.bind(main_mod .. " + ALT + P", hl.dsp.window.pseudo())
 hl.bind(main_mod .. " + I", hl.dsp.layout("togglesplit"))
-hl.bind(main_mod .. " + O", hl.dsp.exec_cmd("~/.config/hypr/scripts/toggle-opacity.sh"))
+hl.bind(main_mod .. " + O", function()
+    local window = hl.get_active_window()
+    if not window then
+        return
+    end
+
+    local tags = {}
+    for _, tag in ipairs(window.tags) do
+        tags[tag:gsub("%*$", "")] = true
+    end
+
+    if tags.opaque then
+        hl.dispatch(hl.dsp.window.tag({ tag = "-opaque", window = window }))
+        hl.dispatch(hl.dsp.window.tag({ tag = "+transparent", window = window }))
+    elseif tags.transparent then
+        hl.dispatch(hl.dsp.window.tag({ tag = "-transparent", window = window }))
+        hl.dispatch(hl.dsp.window.tag({ tag = "+opaque", window = window }))
+    else
+        hl.dispatch(hl.dsp.window.tag({ tag = "+transparent", window = window }))
+    end
+end)
 hl.bind("CTRL + ALT + L", hl.dsp.exec_cmd("hyprlock"))
 
 hl.bind(main_mod .. " + ALT + H", hl.dsp.focus({ direction = "left" }))
@@ -442,6 +420,7 @@ hl.bind(main_mod .. " + P", hl.dsp.workspace.toggle_special("players"))
 hl.bind(main_mod .. " + W", hl.dsp.workspace.toggle_special("whatsapp"))
 hl.bind(main_mod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-selector.sh"))
 hl.bind(main_mod .. " + A", hl.dsp.workspace.toggle_special("ai"))
+hl.bind(main_mod .. " + D", hl.dsp.workspace.toggle_special("devtools"))
 hl.bind("ALT + A", hl.dsp.exec_cmd("gtk-launch chrome-cadlkienfkclaiaibeoongdcgmdikeeg-Default"))
 hl.bind("PRINT", hl.dsp.exec_cmd([[grim -g "$(slurp)" - | magick - -shave 1x1 PNG:- | swappy -f -]]))
 hl.bind("ALT + C", hl.dsp.exec_cmd("/opt/google/chrome/chrome chrome://new-tab"))
@@ -469,6 +448,14 @@ hl.workspace_rule({ workspace = "special:players", on_created_empty = terminal .
 hl.workspace_rule({ workspace = "special:ai", on_created_empty = "gtk-launch chrome-cadlkienfkclaiaibeoongdcgmdikeeg-Default" })
 hl.workspace_rule({ workspace = "special:whatsapp", on_created_empty = "gtk-launch chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default" })
 hl.workspace_rule({ workspace = "special:telegram", on_created_empty = "Telegram" })
+
+hl.window_rule({
+    match = { class = "^(google-chrome|chromium|Chromium)$", initial_title = "^DevTools" },
+    workspace = "special:devtools",
+    tag = "+transparent",
+    tile = true,
+    maximize = true,
+})
 
 hl.window_rule({
     match = { class = "org.telegram.desktop" },
@@ -509,6 +496,8 @@ hl.window_rule({
 })
 
 hl.window_rule({ match = { class = "^Alacritty" }, opacity = "0.90 override 0.80 override" })
+hl.window_rule({ match = { tag = "transparent" }, opacity = "0.9 override 0.9 override 1.0 override" })
+hl.window_rule({ match = { tag = "opaque" }, opacity = "1.0 override 1.0 override 1.0 override" })
 
 hl.window_rule({
     match = {
