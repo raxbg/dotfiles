@@ -2,6 +2,25 @@ local terminal = "alacritty"
 local file_manager = "thunar"
 local menu = "rofi -show combi"
 local main_mod = "SUPER"
+local window_keyboard_layouts = {}
+local keyboard_layout = 0
+
+local function set_keyboard_layout(layout)
+    if layout ~= keyboard_layout then
+        keyboard_layout = layout
+        hl.exec_cmd("hyprctl switchxkblayout all " .. layout)
+    end
+end
+
+hl.on("window.active", function(window)
+    if window then
+        set_keyboard_layout(window_keyboard_layouts[window.stable_id] or 0)
+    end
+end)
+
+hl.on("window.close", function(window)
+    window_keyboard_layouts[window.stable_id] = nil
+end)
 
 -- Let new outputs initialize before the topology reconciler assigns their roles.
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
@@ -220,7 +239,6 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("awww-daemon")
     hl.exec_cmd("sleep 1 && ~/.config/hypr/scripts/wallpaper-selector.sh --restore")
     hl.exec_cmd("go run -C ~/repos/github/deej ~/repos/github/deej/pkg/deej/cmd/main.go")
-    hl.exec_cmd("/usr/bin/hyprland-per-window-layout")
     hl.exec_cmd("systemctl --user start hyprpolkitagent")
 end)
 
@@ -281,7 +299,7 @@ hl.config({
         kb_layout = "us,bg",
         kb_variant = ",phonetic",
         kb_model = "",
-        kb_options = "caps:escape, grp:alt_space_toggle",
+        kb_options = "caps:escape",
         kb_rules = "",
         repeat_rate = 35,
         repeat_delay = 200,
@@ -327,6 +345,14 @@ hl.bind("ALT + Q", hl.dsp.window.close())
 hl.bind(main_mod .. " + M", hl.dsp.exit())
 hl.bind(main_mod .. " + E", hl.dsp.exec_cmd(file_manager))
 hl.bind("CTRL + Space", hl.dsp.exec_cmd(menu))
+hl.bind("ALT + Space", function()
+    local window = hl.get_active_window()
+    if window then
+        local layout = 1 - keyboard_layout
+        window_keyboard_layouts[window.stable_id] = layout
+        set_keyboard_layout(layout)
+    end
+end, { non_consuming = true })
 hl.bind(main_mod .. " + ALT + P", hl.dsp.window.pseudo())
 hl.bind(main_mod .. " + I", hl.dsp.layout("togglesplit"))
 hl.bind(main_mod .. " + O", function()
