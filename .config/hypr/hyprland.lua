@@ -352,7 +352,7 @@ hl.bind("ALT + Space", function()
         window_keyboard_layouts[window.stable_id] = layout
         set_keyboard_layout(layout)
     end
-end, { non_consuming = true })
+end, { locked = true, non_consuming = true })
 hl.bind(main_mod .. " + ALT + P", hl.dsp.window.pseudo())
 hl.bind(main_mod .. " + I", hl.dsp.layout("togglesplit"))
 hl.bind(main_mod .. " + O", function()
