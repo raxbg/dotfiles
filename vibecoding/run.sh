@@ -9,6 +9,7 @@ SERVE_MODE=false
 SERVE_PORT=""
 SHARE_VOLUME_NAME="opencode-share"
 PLUGIN_CACHE_VOLUME="opencode-plugin-cache"
+STATE_VOLUME="opencode-state"
 EXPECT_SHARE_VOLUME_NAME=false
 BRIDGE_DIR=""
 BRIDGE_PID=""
@@ -194,7 +195,8 @@ start_bridge() {
 build_docker_command() {
   docker run --rm --user 0:0 --entrypoint /bin/sh \
     -v "$PLUGIN_CACHE_VOLUME:/home/node/.cache/opencode:rw" \
-    opencode:latest -c "chown -R $(id -u):$(id -g) /home/node/.cache/opencode"
+    -v "$STATE_VOLUME:/home/node/.local/state/opencode:rw" \
+    opencode:latest -c "chown -R $(id -u):$(id -g) /home/node/.cache/opencode /home/node/.local/state/opencode"
 
   # Check if container already exists
   if [ "$SERVE_MODE" = false ] && docker ps -q -f name="^${CONTAINER_NAME}$" | grep -q .; then
@@ -211,6 +213,7 @@ build_docker_command() {
   #docker_cmd+=(-p 4096:4096)
   docker_cmd+=(-v "$SHARE_VOLUME_NAME:/home/node/.local/share:rw")
   docker_cmd+=(-v "$PLUGIN_CACHE_VOLUME:/home/node/.cache/opencode:rw")
+  docker_cmd+=(-v "$STATE_VOLUME:/home/node/.local/state/opencode:rw")
   docker_cmd+=(-v opencode-go-cache:/go-cache:rw)
   docker_cmd+=(-v opencode-go-path:/go-path:rw)
   docker_cmd+=(-v "$PROJECT_MOUNT")

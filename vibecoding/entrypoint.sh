@@ -6,6 +6,10 @@ HOST_ADDR="${HOST_ADDR:-host.docker.internal}"
 PROJECT_DIR="${PWD:-/home/node/project}"
 TUNNEL_PIDS=""
 
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/opencode"
+mkdir -p "$STATE_DIR"
+[ -e "$STATE_DIR/kv.json" ] || printf '{}\n' > "$STATE_DIR/kv.json"
+
 start_localhost_tunnels() {
     if ! command -v socat >/dev/null 2>&1; then
         echo "⚠️ socat not found, skipping localhost tunnel setup"
