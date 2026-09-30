@@ -77,37 +77,80 @@ define("HOME", rtrim(getenv("HOME"), DS));
 chdir(dirname(__FILE__));
 $cwd = rtrim(getcwd(), DS);
 
-function create_link($path, $name) {
+function create_link($source, $target) {
     global $cwd, $useForce;
-    echo __g("Linking $name...");
+    echo __g("Linking $target...");
     try {
-        if (file_exists($path)) {
-            if (!file_exists(HOME.DS.$path) || $useForce) {
-                if (file_exists(HOME.DS.$path)) {
-                    $new_name = HOME.DS.$path.".bak_dotfiles_installer";
-                    while (file_exists($new_name)) {
-                        $new_name .= ".copy";
-                    }
-                    rename(HOME.DS.$path, $new_name);
-                }
-                symlink($cwd.DS.$path, HOME.DS.$path);
-                echo __g("DONE\n");
-            } else {
-                throw new RuntimeException ("$name files already exist");
-            }
-        } else {
-            throw new RuntimeException ("$name files appear to be missing");
+        if (!file_exists($source)) {
+            throw new RuntimeException ("$source appears to be missing");
         }
+        $destination = HOME.DS.$target;
+        $linkSource = $cwd.DS.$source;
+        if (is_link($destination) && readlink($destination) === $linkSource) {
+            echo __g("DONE (already linked)\n");
+            return;
+        }
+        if (file_exists($destination) || is_link($destination)) {
+            if (!$useForce) {
+                throw new RuntimeException ("$target already exists (use -f to back it up)");
+            }
+            $backup = $destination.".bak_dotfiles_installer";
+            while (file_exists($backup) || is_link($backup)) {
+                $backup .= ".copy";
+            }
+            if (!rename($destination, $backup)) {
+                throw new RuntimeException ("could not back up $target");
+            }
+        }
+        $parent = dirname($destination);
+        if (!is_dir($parent) && !mkdir($parent, 0755, true)) {
+            throw new RuntimeException ("could not create parent directory for $target");
+        }
+        if (!symlink($linkSource, $destination)) {
+            throw new RuntimeException ("could not link $target");
+        }
+        echo __g("DONE\n");
     } catch (RuntimeException $e) {
         echo __r("FAIL (".$e->getMessage().")\n");
     }
 }
 
+function prepare_directory($path) {
+    global $cwd, $useForce;
+    $destination = HOME.DS.$path;
+    if (is_link($destination) && readlink($destination) === $cwd.DS.$path) {
+        if (!$useForce) {
+            echo __r("FAIL ($path is a legacy directory link; use -f to migrate it)\n");
+            return false;
+        }
+        $backup = $destination.".bak_dotfiles_installer";
+        while (file_exists($backup) || is_link($backup)) {
+            $backup .= ".copy";
+        }
+        if (!rename($destination, $backup) || !mkdir($destination)) {
+            echo __r("FAIL (could not migrate $path)\n");
+            return false;
+        }
+    }
+    return true;
+}
+
 //Setup symlinks
 $entries = glob(".*");
 foreach ($entries as $entry) {
-    if (in_array($entry, array(".", "..", ".git"))) continue;
-    create_link($entry, ucfirst(strtolower(substr($entry, 1))));
+    if (in_array($entry, array(".", "..", ".git", ".gitignore", ".config", ".local"))) continue;
+    create_link($entry, $entry);
+}
+if (prepare_directory(".config")) {
+    foreach (glob(".config/*") as $entry) {
+        create_link($entry, $entry);
+    }
+    create_link("vibecoding/opencode", ".config/opencode");
+}
+if (prepare_directory(".local")) {
+    foreach (glob(".local/share/rofi/themes/*") as $entry) {
+        create_link($entry, $entry);
+    }
 }
 
 //Install oh-my-zsh
@@ -150,7 +193,7 @@ foreach ($entries as $entry) {
 //}
 
 //Install Tmux Plugin Manager
-if (!is_dir(getenv("HOME") . "/.tmux/plugins/tmp")) {
+if (!is_dir(getenv("HOME") . "/.tmux/plugins/tpm")) {
     echo __g("Cloning Tmux Plugin Manager...\n");
     passthru("git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm", $ret_val);
     if ($ret_val == 0) {
