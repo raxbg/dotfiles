@@ -14,6 +14,41 @@ EXPECT_SHARE_VOLUME_NAME=false
 BRIDGE_DIR=""
 BRIDGE_PID=""
 BRIDGE_SOCKET_CONTAINER=""
+
+cleanup_worktree() {
+  local repo_root="$1"
+  local worktree_dir="$2"
+  local status
+
+  [ -d "$worktree_dir" ] || return 0
+
+  if ! status=$(git -C "$worktree_dir" status --porcelain); then
+    echo "Unable to check worktree state; keeping it: $worktree_dir"
+    return
+  fi
+
+  if [ -n "$status" ]; then
+    echo "⚠️ Worktree has uncommitted changes: $worktree_dir"
+    if [ -t 0 ]; then
+      read -r -p "[k]eep it or [r]emove it and discard changes? [k] " choice || choice=k
+    else
+      choice=k
+    fi
+    case "$choice" in
+      r|R) git -C "$repo_root" worktree remove --force "$worktree_dir" ;;
+      *) echo "Keeping worktree: $worktree_dir" ;;
+    esac
+  else
+    git -C "$repo_root" worktree remove "$worktree_dir"
+    echo "Removed clean worktree: $worktree_dir"
+  fi
+}
+
+if [ "${1:-}" = "__cleanup-worktree" ]; then
+  cleanup_worktree "$2" "$3"
+  exit
+fi
+
 for arg in "$@"; do
   if [ "$EXPECT_SHARE_VOLUME_NAME" = true ]; then
     SHARE_VOLUME_NAME="$arg"
@@ -73,31 +108,26 @@ if [ "$INPLACE_MODE" = false ] && git rev-parse --git-dir > /dev/null 2>&1; then
     # Get the repository root and current relative path
     REPO_ROOT=$(git rev-parse --show-toplevel)
     CURRENT_REL_PATH=$(realpath --relative-to="$REPO_ROOT" "$(pwd)")
-    
-    # Create worktree directory name based on repo root
-    WORKTREE_DIR="$HOME/.opencode-projects/$WORKTREE_NAME"
+    WORKSPACE_NAME=$(basename "$REPO_ROOT")
+    MAIN_BRANCH=main
+    while true; do
+        read -r -p "Enter a branch name (new branches are based on $MAIN_BRANCH): " NEW_BRANCH || exit 1
+        git check-ref-format --branch "$NEW_BRANCH" >/dev/null 2>&1 && break
+        echo "❌ Invalid branch name"
+    done
+
+    WORKTREE_NAME=$(printf '%s-%s' "$WORKSPACE_NAME" "$NEW_BRANCH" | sed 's/[^a-zA-Z0-9_-]/_/g')
+    WORKTREE_DIR="$HOME/.opencode-projects/$WORKSPACE_NAME/$NEW_BRANCH"
 
     # Create worktree if it doesn't exist
     if [ ! -d "$WORKTREE_DIR" ]; then
-        mkdir -p "$HOME/.opencode-projects"
-        
-        # Check current branch situation
-        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-        MAIN_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-        
-        # Prompt for new branch if needed
-        if [ -z "$CURRENT_BRANCH" ] || [ "$CURRENT_BRANCH" = "$MAIN_BRANCH" ] || [ "$CURRENT_BRANCH" = "HEAD" ]; then
-            echo "Current branch: ${CURRENT_BRANCH:-"(detached HEAD)"}"
-            read -p "Enter a new branch name (or press Enter to continue with current): " NEW_BRANCH
-            if [ -n "$NEW_BRANCH" ]; then
-                git worktree add "$WORKTREE_DIR" -b "$NEW_BRANCH"
-                echo "Created new worktree with branch: $NEW_BRANCH"
-            else
-                git worktree add "$WORKTREE_DIR" HEAD
-            fi
+        mkdir -p "$(dirname "$WORKTREE_DIR")"
+        if git show-ref --verify --quiet "refs/heads/$NEW_BRANCH"; then
+            git worktree add "$WORKTREE_DIR" "$NEW_BRANCH" || exit 1
         else
-            git worktree add "$WORKTREE_DIR" HEAD
+            git worktree add "$WORKTREE_DIR" -b "$NEW_BRANCH" "$MAIN_BRANCH" || exit 1
         fi
+        echo "Created worktree for branch: $NEW_BRANCH"
     fi
 
     # Mount the worktree to /home/node/project, adjusting source path for subdirectory context
@@ -204,7 +234,7 @@ build_docker_command() {
     return 0
   fi
   
-  local docker_cmd=(docker run --rm --memory=6g --memory-swap=6g --name "$CONTAINER_NAME")
+  local docker_cmd=(docker run --rm --memory=16g --memory-swap=16g --name "$CONTAINER_NAME")
   if [ "$SERVE_MODE" = true ]; then
     docker_cmd+=(-d)
   else
@@ -322,7 +352,7 @@ if [ "$TMUX_MODE" = true ]; then
   else
     WORKTREE_PATH="$WORKTREE_DIR"
     if [ ! -d "$WORKTREE_DIR" ]; then
-      echo "❌ Worktree directory not found. Run without tmux mode first to set up the worktree."
+      echo "❌ Worktree directory not found: $WORKTREE_DIR"
       exit 1
     fi
   fi
@@ -359,6 +389,10 @@ if [ "$TMUX_MODE" = true ]; then
   tmux send-keys -t "$WINDOW_TARGET.0" "clear" C-m
 
   # Right pane: opencode container
+  if [ -n "${WORKTREE_DIR:-}" ]; then
+    printf -v cleanup_cmd '%q ' "$SCRIPT_DIR/run.sh" __cleanup-worktree "$REPO_ROOT" "$WORKTREE_DIR"
+    docker_cmd="$docker_cmd; $cleanup_cmd"
+  fi
   tmux send-keys -t "$WINDOW_TARGET.1" "$docker_cmd" C-m
 
   # Attach to tmux if not already in tmux
@@ -370,6 +404,9 @@ if [ "$TMUX_MODE" = true ]; then
 fi
 
 # Start container normally
+if [ -n "${WORKTREE_DIR:-}" ] && [ "$SERVE_MODE" = false ]; then
+  trap 'cleanup_worktree "$REPO_ROOT" "$WORKTREE_DIR"' EXIT
+fi
 start_container
 
 if [ "$SERVE_MODE" = true ]; then
