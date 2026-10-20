@@ -23,7 +23,7 @@ hl.on("window.close", function(window)
 end)
 
 -- Let new outputs initialize before the topology reconciler assigns their roles.
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
+hl.monitor({ output = "", mode = "highres", position = "auto", scale = "auto" })
 
 local topology = { main = nil, secondary = nil }
 local workspace_rule_cache = { main = {}, secondary = {} }
@@ -92,7 +92,7 @@ end
 local function configure_monitors(main, remaining)
     hl.monitor({
         output = main.name,
-        mode = "preferred",
+        mode = "highres",
         position = "0x0",
         scale = desired_scale(main),
     })
@@ -104,7 +104,7 @@ local function configure_monitors(main, remaining)
         local secondary_y = is_builtin_monitor(main) and -secondary_height or main_height
         hl.monitor({
             output = secondary.name,
-            mode = "preferred",
+            mode = "highres",
             position = tostring(math.floor((main_width - secondary_width) / 2)) .. "x" .. secondary_y,
             scale = desired_scale(secondary),
         })
@@ -115,7 +115,7 @@ local function configure_monitors(main, remaining)
         local monitor = remaining[i]
         hl.monitor({
             output = monitor.name,
-            mode = "preferred",
+            mode = "highres",
             position = tostring(x) .. "x0",
             scale = desired_scale(monitor),
         })
@@ -522,7 +522,11 @@ hl.window_rule({
 })
 
 hl.window_rule({ match = { class = "^Alacritty" }, opacity = "0.90 override 0.80 override" })
-hl.window_rule({ match = { tag = "transparent" }, opacity = "0.9 override 0.9 override 1.0 override" })
+hl.window_rule({ match = { tag = "transparent" }, opacity = "0.9 override 0.9 override 0.9 override" })
+hl.window_rule({
+    match = { class = "^(google-chrome|chromium|Chromium)$", initial_title = "^DevTools" },
+    opacity = "0.7 override 0.7 override 0.7 override",
+})
 hl.window_rule({ match = { tag = "opaque" }, opacity = "1.0 override 1.0 override 1.0 override" })
 
 hl.window_rule({
