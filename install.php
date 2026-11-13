@@ -153,6 +153,36 @@ if (prepare_directory(".local")) {
     }
 }
 
+//Configure Chrome touchpad scrolling
+echo __g("Configuring Chrome touchpad scrolling...");
+try {
+    $path = HOME.DS.".config/chrome-flags.conf";
+    $flags = file_exists($path) ? file_get_contents($path) : "";
+    if ($flags === false) {
+        throw new RuntimeException("could not read $path");
+    }
+    $feature = "WaylandUnscaledTouchpadScrolling";
+    $updated = preg_replace_callback('/^--enable-features=([^\r\n]*)/m', function ($match) use ($feature) {
+        $features = explode(",", $match[1]);
+        if (!in_array($feature, $features, true)) {
+            $features[] = $feature;
+        }
+        return "--enable-features=".implode(",", $features);
+    }, $flags, -1, $count);
+    if (!$count) {
+        $updated .= ($flags !== "" && substr($flags, -1) !== "\n" ? "\n" : "")."--enable-features=$feature\n";
+    }
+    if (!is_dir(dirname($path)) && !mkdir(dirname($path), 0755, true)) {
+        throw new RuntimeException("could not create Chrome config directory");
+    }
+    if ($updated !== $flags && file_put_contents($path, $updated) === false) {
+        throw new RuntimeException("could not write $path");
+    }
+    echo __g("DONE\n");
+} catch (RuntimeException $e) {
+    echo __r("FAIL (".$e->getMessage().")\n");
+}
+
 //Install oh-my-zsh
 //if (!is_dir(getenv("HOME") . "/.oh-my-zsh")) {
 //    echo __g("Installing Oh My Zsh\n");
