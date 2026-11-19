@@ -6,7 +6,7 @@ TMUX_MODE=false
 BUILD_ONLY=false
 BUILD_ALL=false
 SERVE_MODE=false
-SERVE_PORT=""
+SERVER_PORT=4096
 SHARE_VOLUME_NAME="opencode-share"
 PLUGIN_CACHE_VOLUME="opencode-plugin-cache"
 STATE_VOLUME="opencode-state"
@@ -89,20 +89,6 @@ SOURCE_DIR="$(pwd)"
 WORKSPACE_NAME="$(basename "$SOURCE_DIR")"
 WORKTREE_NAME=$(pwd | sed 's/[^a-zA-Z0-9_-]/_/g')
 
-is_port_in_use() {
-  timeout 1 bash -c "cat < /dev/null > /dev/tcp/127.0.0.1/$1" 2>/dev/null
-}
-
-find_free_port() {
-  local port=4096
-
-  while is_port_in_use "$port"; do
-    port=$((port + 1))
-  done
-
-  echo "$port"
-}
-
 # Check if current directory is a git repository and inplace mode is not enabled
 if [ "$INPLACE_MODE" = false ] && git rev-parse --git-dir > /dev/null 2>&1; then
     # Get the repository root and current relative path
@@ -152,8 +138,7 @@ AGENTS_DIR="$HOME/.agents"
 mkdir -p "$AGENTS_DIR"
 
 if [ "$SERVE_MODE" = true ]; then
-  SERVE_PORT="$(find_free_port)"
-  CONTAINER_NAME="opencode${WORKTREE_NAME}-serve-${SERVE_PORT}"
+  CONTAINER_NAME="opencode${WORKTREE_NAME}-serve-$(date +%s)-$$"
 else
   CONTAINER_NAME="opencode$WORKTREE_NAME"
 fi
@@ -234,13 +219,15 @@ build_docker_command() {
     return 0
   fi
   
-  local docker_cmd=(docker run --rm --memory=16g --memory-swap=16g --name "$CONTAINER_NAME")
+  local docker_cmd=(docker run --rm --init --memory=16g --memory-swap=16g --name "$CONTAINER_NAME")
+  local mode=tui
   if [ "$SERVE_MODE" = true ]; then
     docker_cmd+=(-d)
+    mode=serve
   else
     docker_cmd+=(-it)
   fi
-  #docker_cmd+=(-p 4096:4096)
+  docker_cmd+=(-p "$SERVER_PORT")
   docker_cmd+=(-v "$SHARE_VOLUME_NAME:/home/node/.local/share:rw")
   docker_cmd+=(-v "$PLUGIN_CACHE_VOLUME:/home/node/.cache/opencode:rw")
   docker_cmd+=(-v "$STATE_VOLUME:/home/node/.local/state/opencode:rw")
@@ -272,17 +259,12 @@ build_docker_command() {
     docker_cmd+=(-e OPENCODE_BRIDGE_SOCKET="$BRIDGE_SOCKET_CONTAINER")
   fi
 
-  if [ "$SERVE_MODE" = true ]; then
-    docker_cmd+=(-p "${SERVE_PORT}:${SERVE_PORT}")
-    docker_cmd+=(--label opencode.managed=true)
-    docker_cmd+=(--label opencode.mode=serve)
-    docker_cmd+=(--label "opencode.port=${SERVE_PORT}")
-    docker_cmd+=(--label "opencode.source_dir=${SOURCE_DIR}")
-    docker_cmd+=(--label "opencode.worktree_name=${WORKTREE_NAME}")
-    docker_cmd+=(-e OPENCODE_MODE=serve)
-    docker_cmd+=(-e OPENCODE_HOSTNAME=0.0.0.0)
-    docker_cmd+=(-e OPENCODE_PORT="${SERVE_PORT}")
-  fi
+  docker_cmd+=(--label opencode.managed=true)
+  docker_cmd+=(--label "opencode.mode=$mode")
+  docker_cmd+=(--label "opencode.source_dir=${SOURCE_DIR}")
+  docker_cmd+=(--label "opencode.worktree_name=${WORKTREE_NAME}")
+  docker_cmd+=(-e "OPENCODE_MODE=$mode" -e "OPENCODE_PORT=$SERVER_PORT")
+  docker_cmd+=(-e TINI_KILL_PROCESS_GROUP=1)
 
   # Clipboard support
   if [[ "$(uname -s)" == "Linux" ]]; then
@@ -302,7 +284,7 @@ build_docker_command() {
 
   docker_cmd+=(opencode:latest)
   
-  echo "${docker_cmd[@]}"
+  printf '%q ' "${docker_cmd[@]}"
 }
 
 # Start the container
@@ -410,5 +392,6 @@ fi
 start_container
 
 if [ "$SERVE_MODE" = true ]; then
-  echo "🌐 OpenCode serve mode running at http://localhost:${SERVE_PORT}"
+  echo "🌐 Published OpenCode server address:"
+  docker port "$CONTAINER_NAME" "$SERVER_PORT/tcp"
 fi

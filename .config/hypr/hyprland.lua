@@ -471,10 +471,19 @@ hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), locked)
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), locked)
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), locked)
 
-hl.workspace_rule({ workspace = "special:players", on_created_empty = terminal .. " -e cliamp --provider spotify" })
-hl.workspace_rule({ workspace = "special:ai", on_created_empty = "gtk-launch chrome-cadlkienfkclaiaibeoongdcgmdikeeg-Default" })
-hl.workspace_rule({ workspace = "special:whatsapp", on_created_empty = "gtk-launch chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default" })
-hl.workspace_rule({ workspace = "special:telegram", on_created_empty = "Telegram" })
+local workspace_apps = {
+    ["special:players"] = terminal .. " -e cliamp --provider spotify",
+    ["special:ai"] = "gtk-launch chrome-cadlkienfkclaiaibeoongdcgmdikeeg-Default",
+    ["special:whatsapp"] = "gtk-launch chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default",
+    ["special:telegram"] = "Telegram",
+}
+
+hl.on("workspace.created", function(workspace)
+    local command = workspace_apps[workspace.addressable_name]
+    if workspace.is_empty and command then
+        hl.exec_cmd(command, { workspace = workspace.addressable_name })
+    end
+end)
 
 hl.window_rule({
     match = { class = "^(google-chrome|chromium|Chromium)$", initial_title = "^DevTools" },
@@ -503,7 +512,7 @@ hl.window_rule({
 })
 
 hl.window_rule({
-    match = { class = "^chrome-.*", initial_title = "^(ChatGPT)" },
+    match = { class = "^chrome-cadlkienfkclaiaibeoongdcgmdikeeg-Default$" },
     workspace = "special:ai",
     tile = true,
 })
