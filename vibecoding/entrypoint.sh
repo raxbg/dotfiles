@@ -85,9 +85,7 @@ esac
 
 start_localhost_tunnels
 
-OPENCODE_PASSWORD="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("hex"))')"
-export OPENCODE_PASSWORD
-(umask 077; printf '%s\n' "$OPENCODE_PASSWORD" > /tmp/opencode-password)
+export OPENCODE_PASSWORD=opencode
 
 MODE="${OPENCODE_MODE:-tui}"
 HOSTNAME_VALUE="${OPENCODE_HOSTNAME:-0.0.0.0}"
