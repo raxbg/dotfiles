@@ -70,13 +70,9 @@ function parseLabels(rawLabels) {
   return labels;
 }
 
-async function listServeContainers() {
+async function listOpenCodeContainers() {
   const args = [
     "ps",
-    "--filter",
-    "label=opencode.managed=true",
-    "--filter",
-    "label=opencode.mode=serve",
     "--format",
     "{{json .}}",
   ];
@@ -100,7 +96,15 @@ async function listServeContainers() {
     }
 
     const labels = parseLabels(entry.Labels);
-    const port = labels["opencode.port"] || "";
+    const managed = labels["opencode.managed"] === "true";
+    if (!managed && entry.Image !== "opencode:latest") {
+      continue;
+    }
+
+    const mode = labels["opencode.mode"] === "serve" ? "serve" : "tui";
+    const targetPort = /^\d{1,5}$/.test(labels["opencode.port"])
+      ? labels["opencode.port"] : "4096";
+    const port = String(entry.Ports || "").match(new RegExp(`:(\\d+)->${targetPort}/tcp(?:,|$)`))?.[1] || "";
     const sourceDir = labels["opencode.source_dir"] || "";
 
     containers.push({
@@ -110,6 +114,8 @@ async function listServeContainers() {
       runningFor: entry.RunningFor,
       ports: entry.Ports,
       port,
+      mode,
+      canStop: managed && mode === "serve",
       sourceDir,
     });
   }
@@ -318,7 +324,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && url.pathname === "/api/servers") {
     try {
-      const servers = await listServeContainers();
+      const servers = await listOpenCodeContainers();
       jsonResponse(res, 200, { servers });
     } catch (error) {
       jsonResponse(res, 500, {

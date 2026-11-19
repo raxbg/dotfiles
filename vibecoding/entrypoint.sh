@@ -4,7 +4,9 @@ set -eu
 
 HOST_ADDR="${HOST_ADDR:-host.docker.internal}"
 PROJECT_DIR="${PWD:-/home/node/project}"
+PORT_VALUE="${OPENCODE_PORT:-4096}"
 TUNNEL_PIDS=""
+SERVER_PID=""
 
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/opencode"
 mkdir -p "$STATE_DIR"
@@ -37,6 +39,10 @@ start_localhost_tunnels() {
 
     echo "🔌 Starting localhost tunnels via $HOST_ADDR..."
     for port in $ports; do
+        if [ "$port" = "$PORT_VALUE" ]; then
+            echo "  - skipped $port (reserved for OpenCode)"
+            continue
+        fi
         socat "TCP-LISTEN:${port},bind=127.0.0.1,reuseaddr,fork" "TCP:${HOST_ADDR}:${port}" >/tmp/opencode-tunnel-"${port}".log 2>&1 &
         pid=$!
 
@@ -59,16 +65,50 @@ cleanup_tunnels() {
     done
 }
 
-trap cleanup_tunnels EXIT INT TERM
+cleanup() {
+    if [ -n "$SERVER_PID" ]; then
+        kill "$SERVER_PID" 2>/dev/null || true
+        wait "$SERVER_PID" 2>/dev/null || true
+    fi
+    cleanup_tunnels
+}
+
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+# V1 does not honor the password variable used for the published server.
+case "$(/usr/local/bin/opencode --version)" in
+    'opencode v2.'*|2.*) ;;
+    *) echo "OpenCode v2 is required. Rebuild the runner image with run.sh build." >&2; exit 1 ;;
+esac
 
 start_localhost_tunnels
 
+OPENCODE_PASSWORD="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("hex"))')"
+export OPENCODE_PASSWORD
+(umask 077; printf '%s\n' "$OPENCODE_PASSWORD" > /tmp/opencode-password)
+
 MODE="${OPENCODE_MODE:-tui}"
+HOSTNAME_VALUE="${OPENCODE_HOSTNAME:-0.0.0.0}"
 
 if [ "$MODE" = "serve" ]; then
-    HOSTNAME_VALUE="${OPENCODE_HOSTNAME:-0.0.0.0}"
-    PORT_VALUE="${OPENCODE_PORT:-4096}"
     exec /usr/local/bin/opencode serve --hostname "$HOSTNAME_VALUE" --port "$PORT_VALUE"
 fi
 
-exec /usr/local/bin/opencode "$@"
+SERVER_URL="http://127.0.0.1:$PORT_VALUE"
+/usr/local/bin/opencode serve --hostname "$HOSTNAME_VALUE" --port "$PORT_VALUE" > /tmp/opencode-server.log 2>&1 &
+SERVER_PID=$!
+
+attempt=0
+until curl -fsS --max-time 1 -u "opencode:$OPENCODE_PASSWORD" "$SERVER_URL/api/info" >/dev/null 2>&1; do
+    if ! kill -0 "$SERVER_PID" 2>/dev/null || [ "$attempt" -ge 100 ]; then
+        cat /tmp/opencode-server.log >&2
+        echo "OpenCode server failed to start." >&2
+        exit 1
+    fi
+    attempt=$((attempt + 1))
+    sleep 0.1
+done
+
+/usr/local/bin/opencode --server "$SERVER_URL" "$@"

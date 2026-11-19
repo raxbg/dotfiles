@@ -29,7 +29,7 @@ RUN ARCH=$(uname -m) && \
 
 FROM base AS opencode
 
-RUN npm i -g opencode-ai@latest
+RUN npm i -g @opencode/cli
 
 ADD ./entrypoint.sh /etc/entrypoint.sh
 RUN chmod +x /etc/entrypoint.sh

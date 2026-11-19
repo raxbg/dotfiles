@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OpenCode Servers</title>
+  <title>OpenCode Dashboard</title>
   <style>
     :root {
       --bg: #0b111c;
@@ -305,8 +305,8 @@
 <body>
   <main>
     <section class="hero">
-      <h1>OpenCode Serve Dashboard</h1>
-      <div class="sub">Launch and track live OpenCode web servers from one place.</div>
+      <h1>OpenCode Dashboard</h1>
+      <div class="sub">Launch servers and connect to running OpenCode containers.</div>
     </section>
 
     <section class="panel">
@@ -328,7 +328,7 @@
 
     <section class="panel">
       <div class="toolbar">
-        <div id="count" class="count">Active servers: 0</div>
+        <div id="count" class="count">Active containers: 0</div>
         <button id="refresh-btn" type="button">Refresh</button>
       </div>
       <div id="table-wrap"></div>
@@ -448,33 +448,34 @@
     }
 
     function renderServers(servers) {
-      count.textContent = "Active servers: " + servers.length;
+      count.textContent = "Active containers: " + servers.length;
 
       if (!servers.length) {
-        tableWrap.innerHTML = "<div class='status'>No active OpenCode serve containers found.</div>";
+        tableWrap.innerHTML = "<div class='status'>No active OpenCode containers found.</div>";
         return;
       }
 
       const rows = servers.map((server) => {
         const originHost = window.location.hostname || "localhost";
-        const protocol = window.location.protocol || "http:";
         const serverUrl = server.port
-          ? protocol + "//" + originHost + ":" + server.port
+          ? escapeHtml("http://" + originHost + ":" + server.port)
           : "";
         const urlCell = serverUrl
           ? "<a href='" + serverUrl + "' target='_blank' rel='noreferrer'>" + serverUrl + "</a>"
           : "-";
-        const source = server.sourceDir || "-";
-        const since = server.runningFor || "-";
-        const status = server.status || "-";
-        const name = server.name || "-";
-        const stopButton = server.id
-          ? "<button class='stop-btn' data-action='stop' data-id='" + server.id + "' data-name='" + name + "' type='button'>Stop</button>"
+        const source = escapeHtml(server.sourceDir || "-");
+        const since = escapeHtml(server.runningFor || "-");
+        const status = escapeHtml(server.status || "-");
+        const name = escapeHtml(server.name || "-");
+        const mode = server.mode === "serve" ? "Detached" : "TUI";
+        const stopButton = server.canStop && server.id
+          ? "<button class='stop-btn' data-action='stop' data-id='" + escapeHtml(server.id) + "' data-name='" + name + "' type='button'>Stop</button>"
           : "-";
 
         return "<tr>" +
           "<td data-label='URL'>" + urlCell + "</td>" +
           "<td data-label='Container'>" + name + "</td>" +
+          "<td data-label='Mode'>" + mode + "</td>" +
           "<td data-label='Directory'>" + source + "</td>" +
           "<td data-label='Started'>" + since + "</td>" +
           "<td data-label='Status'>" + status + "</td>" +
@@ -483,7 +484,7 @@
       }).join("");
 
       tableWrap.innerHTML =
-        "<table><thead><tr><th>URL</th><th>Container</th><th>Directory</th><th>Started</th><th>Status</th><th class='actions-col'>Actions</th></tr></thead><tbody>" +
+        "<table><thead><tr><th>URL</th><th>Container</th><th>Mode</th><th>Directory</th><th>Started</th><th>Status</th><th class='actions-col'>Actions</th></tr></thead><tbody>" +
         rows +
         "</tbody></table>";
     }
