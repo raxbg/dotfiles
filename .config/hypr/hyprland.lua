@@ -472,7 +472,7 @@ hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), locked)
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), locked)
 
 local workspace_apps = {
-    ["special:players"] = terminal .. " -e cliamp --provider spotify",
+    ["special:players"] = "spotify",
     ["special:ai"] = "gtk-launch chrome-cadlkienfkclaiaibeoongdcgmdikeeg-Default",
     ["special:whatsapp"] = "gtk-launch chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default",
     ["special:telegram"] = "Telegram",
