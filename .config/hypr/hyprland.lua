@@ -264,6 +264,10 @@ hl.config({
     cursor = {
         no_warps = true,
     },
+    render = {
+        -- Avoid fullscreen HDR mode switches on the 8-bit desktop output.
+        cm_auto_hdr = 0,
+    },
     decoration = {
         rounding = 10,
         rounding_power = 2,
