@@ -79,33 +79,36 @@ Item {
         property bool hoverReady: false
         // qmllint disable missing-property
         anchor.item: chip
+        anchor.rect: Qt.rect(0, 0, chip.width, chip.height + 10)
         anchor.edges: Edges.Bottom
         anchor.gravity: Edges.Bottom
         // qmllint enable missing-property
         visible: chip.visible && chip.tip !== "" && mouse.containsMouse && hoverReady
         onVisibleChanged: if (!visible) hoverReady = false
-        implicitWidth: Math.min(440, detail.implicitWidth + 20)
-        implicitHeight: detail.implicitHeight + 16
+        implicitWidth: Math.min(440, Math.ceil(detail.implicitWidth) + 32)
+        implicitHeight: Math.ceil(detail.implicitHeight) + 24
         color: "transparent"
 
         Rectangle {
             anchors.fill: parent
             color: "#242e42"
-            border.color: "#80dcdfe1"
-            border.width: 2
-            radius: 15
+            border.color: "#24dcdfe1"
+            radius: 12
 
             Text {
                 id: detail
                 anchors.fill: parent
-                anchors.margins: 8
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
+                anchors.topMargin: 12
+                anchors.bottomMargin: 12
                 text: chip.tip
                 textFormat: chip.richTip ? Text.StyledText : Text.PlainText
                 wrapMode: Text.Wrap
                 color: "#dcdfe1"
                 font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 14
-                font.bold: true
+                font.pixelSize: 13
+                lineHeight: 1.2
             }
         }
     }

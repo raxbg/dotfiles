@@ -1,3 +1,7 @@
+//@ pragma UseQApplication
+// Native tray menus use the Qt platform palette, not the bar's QML colors.
+//@ pragma Env QT_QPA_PLATFORMTHEME=gtk3
+//@ pragma Env GTK_THEME=Adwaita:dark
 //@ pragma Env TZ=Europe/Sofia
 pragma ComponentBehavior: Bound
 
@@ -239,7 +243,7 @@ ShellRoot {
     }
 
     component StatusChip: Chip {
-        background: "#1adcdfe1"
+        hoverBackground: "#1cdcdfe1"
         textFormat: Text.StyledText
         leftRadius: 0
         rightRadius: 0
@@ -355,6 +359,16 @@ ShellRoot {
             y: 10
             width: statusRow.implicitWidth + 16
 
+            // A single fill avoids seams between chips at fractional display scales.
+            Rectangle {
+                x: statusRow.x + audioChip.x
+                y: statusRow.y
+                width: statusRow.width - audioChip.x
+                height: audioChip.height
+                radius: 15
+                color: "#1adcdfe1"
+            }
+
             Row {
                 id: statusRow
                 anchors.centerIn: parent
@@ -377,7 +391,7 @@ ShellRoot {
                                 interactive: true
                                 buttons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                                 onClicked: button => {
-                                    if (button === Qt.RightButton || (button === Qt.LeftButton && trayItem.modelData.onlyMenu)) {
+                                    if (button === Qt.RightButton || (button === Qt.LeftButton && (trayItem.modelData.onlyMenu || trayItem.modelData.id === "nm-applet"))) {
                                         if (trayItem.modelData.hasMenu) {
                                             const pos = trayItem.mapToItem(panel.contentItem, 0, trayItem.height);
                                             trayItem.modelData.display(panel, pos.x, pos.y);
@@ -405,6 +419,7 @@ ShellRoot {
                 Item { width: 9; height: 30 }
 
                 StatusChip {
+                    id: audioChip
                     leftRadius: 15
                     foreground: root.speaker?.muted ? "#a55555" : "#dcdfe1"
                     text: root.speakerIcon() + " " + (root.speaker ? root.percent(root.speaker) : "—") +
