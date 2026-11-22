@@ -198,26 +198,26 @@ Scope {
 
         Rectangle {
             anchors.fill: parent
-            color: "#58000000"
+            color: "#3d000000"
             MouseArea { anchors.fill: parent; onClicked: launcher.close() }
         }
 
         Rectangle {
             anchors.centerIn: parent
             width: Math.min(580, parent.width - 32)
-            height: Math.min(480, parent.height - 32)
+            height: Math.min(490, parent.height - 32)
             radius: 15
             color: "#242e42"
-            border.color: "#80dcdfe1"
+            border.color: "#24dcdfe1"
             MouseArea { anchors.fill: parent }
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 16
-                spacing: 10
+                anchors.margins: 22
+                spacing: 14
 
                 Row {
-                    spacing: 6
+                    spacing: 10
                     Repeater {
                         model: launcher.modes
                         Chip {
@@ -225,8 +225,23 @@ Scope {
                             required property int index
                             text: modelData
                             selected: launcher.mode === index
+                            selectedBackground: "transparent"
+                            hoverBackground: "#0ddcdfe1"
+                            foreground: selected ? "#93c5fd" : "#b5bfce"
+                            font.pixelSize: 13
+                            font.bold: selected
                             interactive: true
                             onClicked: launcher.setMode(index)
+
+                            Rectangle {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.bottom: parent.bottom
+                                width: 16
+                                height: 2
+                                radius: 1
+                                color: "#93c5fd"
+                                visible: parent.selected
+                            }
                         }
                     }
                 }
@@ -234,13 +249,25 @@ Scope {
                 TextField {
                     id: input
                     Layout.fillWidth: true
+                    Layout.preferredHeight: 44
+                    leftPadding: 23
+                    rightPadding: 16
+                    topPadding: 0
+                    bottomPadding: 0
+                    verticalAlignment: TextInput.AlignVCenter
                     placeholderText: ["Search apps and commands…", "Enter an expression…", "Search wallpapers…"][launcher.mode]
                     color: "#dcdfe1"
-                    placeholderTextColor: "#b5bfce"
+                    placeholderTextColor: "#9ba7b9"
+                    selectionColor: "#455977"
+                    selectedTextColor: "#ffffff"
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 15
                     Accessible.name: placeholderText
-                    background: Rectangle { color: "#1b2434"; radius: 8 }
+                    background: Rectangle {
+                        color: "#1b2434"
+                        radius: 10
+                        border.color: input.activeFocus ? "#3693c5fd" : "#1adcdfe1"
+                    }
 
                     Keys.onPressed: event => {
                         const alt = event.modifiers & Qt.AltModifier;
@@ -291,6 +318,7 @@ Scope {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
+                    spacing: 4
                     // Stable row slots let visible delegates update without resetting or reordering the model.
                     model: ScriptModel {
                         values: Array.from({length: launcher.resultCount}, (_, index) => index)
@@ -301,16 +329,28 @@ Scope {
                         id: entry
                         required property int index
                         readonly property var row: launcher.results[index]
+                        readonly property bool current: index === list.currentIndex
                         width: list.width
-                        height: 44
+                        height: 42
                         radius: 8
-                        color: index === list.currentIndex ? "#455977" : "transparent"
+                        color: current ? "#1393c5fd" : "transparent"
+
+                        Rectangle {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 3
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 2
+                            height: 18
+                            radius: 1
+                            color: "#93c5fd"
+                            visible: entry.current
+                        }
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: 10
-                            anchors.rightMargin: 10
-                            spacing: 10
+                            anchors.leftMargin: 14
+                            anchors.rightMargin: 12
+                            spacing: 12
 
                             IconImage {
                                 visible: !!entry.row && !entry.row.image
@@ -326,22 +366,29 @@ Scope {
                                 asynchronous: true
                                 fillMode: Image.PreserveAspectFit
                             }
-                            Label {
+                            ColumnLayout {
                                 Layout.fillWidth: true
-                                text: entry.row?.title ?? ""
-                                textFormat: Text.PlainText
-                                elide: Text.ElideRight
-                                color: "#dcdfe1"
-                                font.family: input.font.family
-                            }
-                            Label {
-                                Layout.maximumWidth: 170
-                                text: entry.row?.detail ?? ""
-                                textFormat: Text.PlainText
-                                elide: Text.ElideRight
-                                color: "#b5bfce"
-                                font.family: input.font.family
-                                font.pixelSize: 11
+                                spacing: 1
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: entry.row?.title ?? ""
+                                    textFormat: Text.PlainText
+                                    elide: Text.ElideRight
+                                    color: "#dcdfe1"
+                                    font.family: input.font.family
+                                    font.pixelSize: 13
+                                    font.bold: entry.current
+                                }
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: entry.row?.detail === entry.row?.title ? "" : entry.row?.detail ?? ""
+                                    visible: text !== ""
+                                    textFormat: Text.PlainText
+                                    elide: Text.ElideRight
+                                    color: "#9ba7b9"
+                                    font.family: input.font.family
+                                    font.pixelSize: 11
+                                }
                             }
                         }
 
@@ -353,10 +400,12 @@ Scope {
                 }
 
                 Label {
+                    Layout.fillWidth: true
                     text: launcher.mode === 1 ? "Enter: copy   Alt+H/L: mode   Esc: close" :
-                        launcher.mode === 2 ? "↑↓ / J/K: navigate   Enter: apply   Alt+H/L: mode" :
-                        "↑↓ / J/K: navigate   Enter: open   Shift+Enter: run typed command   Alt+H/L: mode"
-                    color: "#b5bfce"
+                        launcher.mode === 2 ? "↑↓ / J/K: navigate   Enter: apply   Alt+H/L: mode   Esc: close" :
+                        "↑↓ / J/K: navigate   Enter: open   Shift+Enter: run command   Alt+H/L: mode"
+                    elide: Text.ElideRight
+                    color: "#9ba7b9"
                     font.family: input.font.family
                     font.pixelSize: 10
                 }
