@@ -1,6 +1,6 @@
 local terminal = "alacritty"
 local file_manager = "thunar"
-local menu = "rofi -show combi"
+local menu = "quickshell ipc call launcher toggle"
 local main_mod = "SUPER"
 local window_keyboard_layouts = {}
 local keyboard_layout = 0
@@ -30,7 +30,7 @@ local workspace_rule_cache = { main = {}, secondary = {} }
 local active_workspace_rules = { main = {}, secondary = {} }
 local reconcile_timer = nil
 local session_started = false
-local waybar_launch_pending = false
+local quickshell_launch_pending = false
 
 local function is_builtin_monitor(monitor)
     local connector = monitor.name:match("^([^-]+)")
@@ -197,9 +197,9 @@ local function reconcile_topology()
     configure_monitors(main, remaining)
     configure_workspaces(topology.main, topology.secondary)
 
-    if waybar_launch_pending then
-        waybar_launch_pending = false
-        hl.exec_cmd("env WAYBAR_OUTPUT=" .. topology.main .. " ~/.config/waybar/launch.sh")
+    if quickshell_launch_pending then
+        quickshell_launch_pending = false
+        hl.exec_cmd("quickshell -n -d")
     end
 end
 
@@ -221,7 +221,7 @@ end)
 hl.on("monitor.removed", schedule_topology_reconcile)
 hl.on("hyprland.start", function()
     session_started = true
-    waybar_launch_pending = true
+    quickshell_launch_pending = true
     schedule_topology_reconcile()
 end)
 hl.on("config.reloaded", function()
@@ -234,7 +234,6 @@ end)
 
 hl.on("hyprland.start", function()
     hl.exec_cmd("hypridle")
-    hl.exec_cmd("mako")
     hl.exec_cmd("blueman-applet")
     hl.exec_cmd("awww-daemon")
     hl.exec_cmd("sleep 1 && ~/.config/hypr/scripts/wallpaper-selector.sh --restore")
@@ -350,7 +349,6 @@ hl.bind("ALT + Q", hl.dsp.window.close())
 hl.bind(main_mod .. " + M", hl.dsp.exit())
 hl.bind(main_mod .. " + E", hl.dsp.exec_cmd(file_manager))
 hl.bind("CTRL + Space", hl.dsp.exec_cmd(menu))
-hl.bind("CTRL + SHIFT + Space", hl.dsp.exec_cmd("quickshell ipc call launcher toggle"))
 hl.bind("ALT + Space", function()
     local window = hl.get_active_window()
     if window then
