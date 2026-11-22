@@ -241,6 +241,10 @@ ShellRoot {
 
     NotificationPopups { targetScreen: root.mainScreen }
 
+    AppLauncher {
+        targetScreen: Quickshell.screens.find(screen => screen.name === Hyprland.focusedMonitor?.name) ?? root.mainScreen
+    }
+
     component Section: Rectangle {
         height: 40
         radius: 20

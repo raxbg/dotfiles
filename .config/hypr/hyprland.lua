@@ -350,6 +350,7 @@ hl.bind("ALT + Q", hl.dsp.window.close())
 hl.bind(main_mod .. " + M", hl.dsp.exit())
 hl.bind(main_mod .. " + E", hl.dsp.exec_cmd(file_manager))
 hl.bind("CTRL + Space", hl.dsp.exec_cmd(menu))
+hl.bind("CTRL + SHIFT + Space", hl.dsp.exec_cmd("quickshell ipc call launcher toggle"))
 hl.bind("ALT + Space", function()
     local window = hl.get_active_window()
     if window then
