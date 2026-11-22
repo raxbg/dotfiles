@@ -18,7 +18,6 @@ Item {
     readonly property bool hovered: mouse.containsMouse
     property string tip: ""
     property bool richTip: false
-    property bool pinned: false
     property bool selected: false
     property bool interactive: false
     property int buttons: Qt.LeftButton
@@ -83,7 +82,7 @@ Item {
         anchor.edges: Edges.Bottom
         anchor.gravity: Edges.Bottom
         // qmllint enable missing-property
-        visible: chip.visible && chip.tip !== "" && (chip.pinned || (mouse.containsMouse && hoverReady))
+        visible: chip.visible && chip.tip !== "" && mouse.containsMouse && hoverReady
         onVisibleChanged: if (!visible) hoverReady = false
         implicitWidth: Math.min(440, detail.implicitWidth + 20)
         implicitHeight: detail.implicitHeight + 16

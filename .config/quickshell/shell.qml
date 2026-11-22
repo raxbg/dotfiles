@@ -70,19 +70,6 @@ ShellRoot {
         Hyprland.dispatch('hl.dsp.focus({workspace = "' + selector + '"})');
     }
 
-    function monthCalendar(date) {
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const offset = (new Date(year, month, 1).getDay() + 6) % 7;
-        const days = new Date(year, month + 1, 0).getDate();
-        let grid = Qt.formatDate(date, "MMMM yyyy") + "\nMo Tu We Th Fr Sa Su\n";
-        for (let i = 0; i < offset + days; i++) {
-            const day = i - offset + 1;
-            grid += day < 1 ? "   " : String(day).padStart(2, " ") + (i % 7 === 6 ? "\n" : " ");
-        }
-        return grid.trim();
-    }
-
     SystemClock { id: clock; precision: SystemClock.Seconds }
 
     PwObjectTracker {
@@ -329,14 +316,21 @@ ShellRoot {
                     leftPadding: 15
                     rightPadding: 15
                     text: " " + Qt.formatDateTime(clock.date, "dd - HH:mm:ss") + " "
-                    tip: root.monthCalendar(clock.date)
+                    tip: calendarPopup.visible ? "" : "Open calendar"
+                    selected: calendarPopup.visible
                     interactive: true
-                    onClicked: {
-                        const calendar = DesktopEntries.byId("org.gnome.Calendar");
-                        if (calendar)
-                            calendar.execute();
+                    buttons: Qt.LeftButton | Qt.RightButton
+                    onClicked: button => {
+                        if (button === Qt.RightButton)
+                            DesktopEntries.byId("org.gnome.Calendar")?.execute();
                         else
-                            pinned = !pinned;
+                            calendarPopup.visible = !calendarPopup.visible;
+                    }
+
+                    CalendarPopup {
+                        id: calendarPopup
+                        trigger: clockChip
+                        today: clock.date
                     }
                 }
                 Chip {
@@ -359,26 +353,26 @@ ShellRoot {
             anchors.right: parent.right
             anchors.rightMargin: 5
             y: 10
-            width: statusRow.implicitWidth + 10
+            width: statusRow.implicitWidth + 16
 
             Row {
                 id: statusRow
                 anchors.centerIn: parent
 
                 Row {
-                    spacing: 6
+                    spacing: 5
                     Repeater {
                         model: SystemTray.items
                         delegate: Item {
                             id: trayItem
                             required property SystemTrayItem modelData
                             visible: modelData.status !== Status.Passive && modelData.id !== "blueman"
-                            width: 17
+                            width: 24
                             height: 30
 
                             Chip {
                                 anchors.fill: parent
-                                hoverBackground: "transparent"
+                                hoverBackground: "#1adcdfe1"
                                 tip: [trayItem.modelData.tooltipTitle || trayItem.modelData.title, trayItem.modelData.tooltipDescription].filter(Boolean).join("\n")
                                 interactive: true
                                 buttons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
@@ -406,9 +400,9 @@ ShellRoot {
                     }
                 }
 
-                BluetoothControl {}
+                BluetoothControl { leftPadding: 9; rightPadding: 9 }
 
-                Item { width: 5; height: 30 }
+                Item { width: 9; height: 30 }
 
                 StatusChip {
                     leftRadius: 15
