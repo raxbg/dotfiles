@@ -470,11 +470,23 @@ ShellRoot {
                     tip: "Memory: " + root.ramUsed.toFixed(2) + " GiB used of " + root.ramTotal.toFixed(2) + " GiB"
                 }
                 StatusChip {
+                    id: cpuChip
                     leftPadding: 10
                     rightPadding: 15
                     rightRadius: 15
+                    // Reserve room for 100% without shifting the icon or neighboring items.
+                    implicitWidth: Math.ceil(cpuWidthSample.implicitWidth) + leftPadding + rightPadding
+                    horizontalAlignment: Text.AlignLeft
                     text: root.coloredIcon("", "#FF9F0A") + " " + (root.cpuUsage >= 0 ? root.cpuUsage + "%" : "—")
                     tip: "CPU usage: " + (root.cpuUsage >= 0 ? root.cpuUsage + "%" : "Sampling…")
+
+                    Text {
+                        id: cpuWidthSample
+                        visible: false
+                        font: cpuChip.font
+                        textFormat: Text.StyledText
+                        text: root.coloredIcon("", "#FF9F0A") + " 100%"
+                    }
                 }
             }
         }

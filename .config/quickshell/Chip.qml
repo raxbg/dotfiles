@@ -8,6 +8,7 @@ Item {
     property alias textFormat: label.textFormat
     property alias foreground: label.color
     property alias font: label.font
+    property alias horizontalAlignment: label.horizontalAlignment
     property int leftPadding: 7
     property int rightPadding: 7
     property real leftRadius: 15
