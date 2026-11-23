@@ -148,6 +148,7 @@ if (prepare_directory(".config")) {
     create_link("vibecoding/opencode", ".config/opencode");
 }
 if (prepare_directory(".local")) {
+    create_link(".local/share/applications/slack.desktop", ".local/share/applications/slack.desktop");
     foreach (glob(".local/share/rofi/themes/*") as $entry) {
         create_link($entry, $entry);
     }

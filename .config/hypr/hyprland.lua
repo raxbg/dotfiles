@@ -475,7 +475,7 @@ hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), locked)
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), locked)
 
 local workspace_apps = {
-    ["special:players"] = "spotify",
+    ["special:players"] = "/usr/bin/spotify",
     ["special:ai"] = "gtk-launch chrome-cadlkienfkclaiaibeoongdcgmdikeeg-Default",
     ["special:whatsapp"] = "gtk-launch chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default",
     ["special:telegram"] = "Telegram",
@@ -504,7 +504,7 @@ hl.window_rule({
     size = "40% 100%",
 })
 
-for _, class in ipairs({ "Spotify", "com.github.th_ch.youtube_music" }) do
+for _, class in ipairs({ "[Ss]potify", "com.github.th_ch.youtube_music" }) do
     hl.window_rule({ match = { class = class }, workspace = "special:players", tile = true })
 end
 
