@@ -288,6 +288,7 @@ ShellRoot {
                         leftPadding: 0
                         rightPadding: 0
                         font.family: "JetBrainsMono Nerd Font Mono"
+                        font.pixelSize: 20
                         text: root.workspaceIcons[modelData] ?? ""
                         tip: "Workspace " + (workspace?.name ?? modelData)
                         background: "#1fdcdfe1"
