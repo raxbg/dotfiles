@@ -457,7 +457,22 @@ ShellRoot {
                 StatusChip {
                     visible: root.battery?.isPresent ?? false
                     text: (root.charging ? "󱐋" : root.coloredIcon(["󰂎", "󰁼", "󰁿", "󰂁", "󰁹"][Math.min(4, Math.floor(root.batteryPercent / 20))], "#16a34a")) + " " + root.batteryPercent + "%"
-                    tip: "Battery: " + root.batteryPercent + "% · " + (root.battery ? UPowerDeviceState.toString(root.battery.state) : "Unknown")
+                    tip: {
+                        const battery = root.battery;
+                        if (!battery?.isPresent)
+                            return "";
+                        const heading = "Battery: " + root.batteryPercent + "%";
+                        const discharging = battery.state === UPowerDeviceState.Discharging;
+                        const seconds = discharging ? battery.timeToEmpty : root.charging ? battery.timeToFull : 0;
+                        if (seconds > 0) {
+                            const minutes = Math.ceil(seconds / 60);
+                            const hours = Math.floor(minutes / 60);
+                            const estimate = (hours ? hours + "h " : "") + minutes % 60 + "m";
+                            return heading + "\nAbout " + estimate + (discharging ? " remaining" : " until full");
+                        }
+                        const state = UPowerDeviceState.toString(battery.state);
+                        return heading + "\n" + state + (discharging || root.charging ? " · Estimating time…" : "");
+                    }
                 }
                 StatusChip {
                     visible: root.temperature !== ""
