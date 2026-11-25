@@ -93,7 +93,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             color: "#242e42"
-            border.color: "#24dcdfe1"
+            border.color: "#80dcdfe1"
             radius: 12
 
             Text {
