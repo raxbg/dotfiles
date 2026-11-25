@@ -477,12 +477,12 @@ ShellRoot {
                 }
                 StatusChip {
                     visible: root.temperature !== ""
-                    text: root.coloredIcon("", "#FFA500") + " " + root.temperature + "°C"
+                    text: root.coloredIcon("", "#FFA500") + " " + Math.trunc(Number(root.temperature)) + "°C"
                     tip: "CPU temperature: " + root.temperature + "°C"
                 }
                 StatusChip {
                     visible: root.ramTotal > 0
-                    text: root.coloredIcon("", "#8A2BE2") + " " + root.ramUsed.toFixed(1) + "G/" + root.ramTotal.toFixed(1) + "G"
+                    text: root.coloredIcon("", "#8A2BE2") + " " + Math.round(root.ramUsed / root.ramTotal * 100) + "%"
                     tip: "Memory: " + root.ramUsed.toFixed(2) + " GiB used of " + root.ramTotal.toFixed(2) + " GiB"
                 }
                 StatusChip {
